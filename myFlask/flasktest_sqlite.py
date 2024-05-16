@@ -1,7 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for
-from myFlask.mySqlite3.createMySqlite3 import Database
+try:
+    from myFlask.mySqlite3.createMySqlite3 import Database
+except:
+    from mySqlite3.createMySqlite3 import Database
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='templates')
 
 # 创建数据库对象
 db = Database('./mySqlite3/customer_database.db')
