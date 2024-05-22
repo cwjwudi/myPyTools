@@ -2,6 +2,7 @@
 
 import cv2
 import numpy as np
+import time
 
 def detect_circles_and_draw_rectangles(image_path):
     # 读取图像
@@ -22,9 +23,14 @@ def detect_circles_and_draw_rectangles(image_path):
     # 创建Blob检测器
     detector = cv2.SimpleBlobDetector_create(params)
 
+    start_time = time.time()
     # 检测blob
     keypoints = detector.detect(gray)
 
+    end_time = time.time()
+
+    execution_time = (end_time - start_time) * 1000
+    print("程序运行时间：", execution_time, "毫秒")
     # 绘制blob
     for keypoint in keypoints:
         x = int(keypoint.pt[0])
