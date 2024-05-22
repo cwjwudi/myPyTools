@@ -93,7 +93,9 @@ class MarkDetect:
             # 步长为scaling。这样就实现了对图像进行缩放的效果。
             img_in = cv2.cvtColor(img[0:-1:scaling, 0:-1:scaling, :], cv2.COLOR_RGB2GRAY)  # 将RGB图像转换为灰度图像
             img_HSV = cv2.cvtColor(img[0:-1:scaling, 0:-1:scaling, :], cv2.COLOR_RGB2HSV)  # 将RGB图像转换为HSV颜色空间
-
+            # cv2.imshow("draw",img_HSV)
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
         self.detect_step = 0
         result_gray, img_, binary_img = self.mark_detect_single_channel(img_in, img_HSV, self.detect_step, n=scaling)
 
@@ -230,6 +232,21 @@ class MarkDetect:
                                            adaptive_block, self.C)
         # binary_img = cv2.morphologyEx(binary_img, cv2.MORPH_ERODE, np.ones((3, 3), np.uint8), iterations=1)
         contours, hierarchy = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2:]  # 寻找轮廓
+        # contours 在这种情况下是ndarray，(N, 1, 2) 的形式表示：
+        # N：表示轮廓上的点的数量。
+        # 1：表示每个点有一个维度。
+        # 2：表示每个点有两个值，分别是 x 和 y 坐标。
+        # 打印包含轮廓的图片用于测试
+        for i, contour in enumerate(contours):
+            cnt_area = cv2.contourArea(contour)
+            if cnt_area > 200:
+                # 打印面积超过200的轮廓
+                print("No: {}, Area: {}".format(i, cnt_area))
+                cv2.drawContours(img_HSV, contours, i, (0, 0, 255), 3)  # 用红色线条绘制第一个轮廓
+        cv2.imshow('binary_img', img_HSV)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
         ### 输出黑白图，用户调试CV参数
         # cv2.imshow("draw",binary_img)
         # cv2.waitKey(0)
