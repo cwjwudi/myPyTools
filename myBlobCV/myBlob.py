@@ -11,7 +11,7 @@ class MarkDetect:
     def __init__(self):
         global head_tail_distance_mm
         # 调试控制参数
-        self.plt_show = 0  # 是否进行检测过程的图片显示
+        self.plt_show = 1  # 是否进行检测过程的图片显示
         self.profile_enable = 0  # 是否分析代码耗时
 
         ### 设置初始状态下的长度范围，对应像素宽的物理宽
@@ -231,9 +231,9 @@ class MarkDetect:
         # binary_img = cv2.morphologyEx(binary_img, cv2.MORPH_ERODE, np.ones((3, 3), np.uint8), iterations=1)
         contours, hierarchy = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2:]  # 寻找轮廓
         ### 输出黑白图，用户调试CV参数
-        cv2.imshow("draw",binary_img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        # cv2.imshow("draw",binary_img)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
         # 遍历所有轮廓，并进行判断
         result = []
         for cnt in contours:
@@ -332,7 +332,7 @@ class MarkDetect:
 
             # 计算外接最小举行顶点
             box = cv2.boxPoints(rect)  # 外接矩形的定点坐标
-            box = np.int0(box)  # 坐标整型化
+            box = np.intp(box)  # 坐标整型化
 
             cal_other_output = 0  # area 矩形度，灰度对比
             if cal_other_output:
@@ -381,7 +381,7 @@ class MarkDetect:
                 cv2.drawContours(img_plt, [cnt], -1, (0, 0, 255), 2)
                 cv2.drawContours(binary_img_plt, [cnt], -1, (0, 0, 255), 2)
                 box = cv2.boxPoints(rect)  # 外接矩形的定点坐标
-                box = np.int0(box)  # 坐标整型化
+                box = np.intp(box)  # 坐标整型化
                 cv2.drawContours(img_plt2, [box], -1, (0, 0, 255), 2)
             plt.subplot(2, 2, 1), plt.imshow(img_plt, 'gray'), plt.title("img_color")
             plt.subplot(2, 2, 2), plt.imshow(binary_img_plt, 'gray'), plt.title('binary_img')
@@ -399,7 +399,7 @@ if __name__ == "__main__":
     mark_detect = MarkDetect()
 
     ### 使用本地图片覆盖掉获取的图片，用于调试
-    img_default = cv2.imdecode(np.fromfile("./mypic/image_14us.jpg", dtype=np.uint8), 1)
+    img_default = cv2.imdecode(np.fromfile("./mypic/Image__2024-04-24__ExposTime50ms.jpg", dtype=np.uint8), 1)
 
     detection_success, result_pos = mark_detect.mark_detect(img_default)
     print(detection_success)
