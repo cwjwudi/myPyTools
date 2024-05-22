@@ -10,6 +10,10 @@ def update_blob_params(x):
     params.minArea = int(cv2.getTrackbarPos("Min Area", "Blob Detection"))
     params.maxArea = int(cv2.getTrackbarPos("Max Area", "Blob Detection"))
 
+    # 确保minThreshold小于等于maxThreshold
+    if params.minThreshold > params.maxThreshold:
+        params.minThreshold = params.maxThreshold
+
     # 确保minArea小于等于maxArea
     if params.minArea > params.maxArea:
         params.minArea = params.maxArea
