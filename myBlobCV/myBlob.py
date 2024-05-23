@@ -464,5 +464,14 @@ if __name__ == "__main__":
     img_default = cv2.imdecode(np.fromfile("./mypic/Image__2024-04-24__ExposTime50ms.jpg", dtype=np.uint8), 1)
 
     detection_success, result_pos = mark_detect.mark_detect(img_default)
+
+    for row in result_pos:
+        # print("No: {}, Area: {}".format(i, cnt_area))
+        point = (int(row[0]), int(row[1]))
+        cv2.circle(img_default, point, radius=3, color=(0, 0, 255), thickness=-1)
+    cv2.imshow('binary_img', img_default)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
     print(detection_success)
     print(result_pos)
