@@ -32,7 +32,7 @@ class MarkDetect:
         self.mark_type = 0  # 0：菱形标，1：圆形标
         self.mark_width = [1, 1.5] # 菱形对角线 圆形直径
         self.mark_height = [1, 1.5]
-        self.rectangularity = [1, 0.785]
+        self.rectangularity = [1, 0.785]  # PI/4 = 0.785
         self.limit = [0.6, 1.2]  # [0.7, 1.2]，筛选面积和长宽的最大最小倍数范围
 
         # 检测算法相关参数
@@ -52,15 +52,18 @@ class MarkDetect:
         self.par_init()
 
     def par_init(self):
+        # 圆标直径1-1.5mm，转换为对应的像素大小，（2048/50）* [1, 1.5]
         self.mark_width = [i * self.resolution_X / self.field_of_view_X_mm for i in self.mark_width]
         self.mark_height = [i * self.resolution_X / self.field_of_view_X_mm for i in self.mark_height]
         self.mark_area = [i * j * k for i, j, k in zip(self.mark_width, self.mark_height, self.rectangularity)]
         self.par = []
+        # 根据预先设定的筛选大小范围self.limit，分别计算scaling和不scaling参数，计算长、宽、面积的限制
         for n in [1, self.scaling]:  # 参数预先计算
             n2 = n * n
             area_limit = [[area * self.limit[0] / n2, area * self.limit[1] / n2] for area in self.mark_area]
             width_limit = [[w * self.limit[0] / n, w * self.limit[1] / n] for w in self.mark_width]
             height_limit = [[h * self.limit[0] / n, h * self.limit[1] / n] for h in self.mark_height]
+            # 矩形度，菱形是1，圆形是0.785，根据self.limit设置放缩的范围
             rectangularity_limit = [[rec * self.limit[0], rec * self.limit[1]] for rec in self.rectangularity]
             blur_kernel = int(round(self.blur_kernel / n, 0))
             blur_kernel = blur_kernel if blur_kernel % 2 else blur_kernel + 1
@@ -237,15 +240,16 @@ class MarkDetect:
         # 1：表示每个点有一个维度。
         # 2：表示每个点有两个值，分别是 x 和 y 坐标。
         # 打印包含轮廓的图片用于测试
-        for i, contour in enumerate(contours):
-            cnt_area = cv2.contourArea(contour)
-            if cnt_area > 200:
-                # 打印面积超过200的轮廓
-                print("No: {}, Area: {}".format(i, cnt_area))
-                cv2.drawContours(img_HSV, contours, i, (0, 0, 255), 3)  # 用红色线条绘制第一个轮廓
-        cv2.imshow('binary_img', img_HSV)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        # for i, contour in enumerate(contours):
+        #     cnt_area = cv2.contourArea(contour)
+        #     for [a1, a2] in area_limit:
+        #         if a1 < cnt_area < a2:
+        #             # 在图片显示面积符合要求的图形
+        #             print("No: {}, Area: {}".format(i, cnt_area))
+        #             cv2.drawContours(img_HSV, contours, i, (0, 0, 255), 3)  # 用红色线条绘制第一个轮廓
+        # cv2.imshow('binary_img', img_HSV)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
         ### 输出黑白图，用户调试CV参数
         # cv2.imshow("draw",binary_img)
@@ -278,28 +282,43 @@ class MarkDetect:
             # if not 30 < abs(rect[2]) < 60:
             #     continue  # 菱形角度判断
 
-            # 再综合判断一下，同时确定是哪种类型的色标，面积长宽矩形度色标类型判断
+            # 再综合判断一下，同时确定是哪种类型的色标，面积长宽矩形度色标类型判断 根据矩形度判断是否一致
             mark_ok = 0
-            self.mark_type_ix = -1
-            for [w1, w2], [h1, h2], [a1, a2], [r1, r2], ix in zip(width_limit, height_limit, area_limit,
-                                                                  rectangularity_limit, range(len(width_limit))):
-                if (a1 < area < a2) and ((w1 < w < w2 and h1 < h < h2) or (w1 < h < w2 and h1 < w < h2)) and (
-                        r1 < area / (w * h) < r2):
-                    mark_ok = 1
-                    self.mark_type_ix = ix
+
+            # ! 以下这段逻辑混乱，重构矩形度判断函数
+            # self.mark_type_ix = -1  # ix这里选择range(len(width_limit))，实际上就是0和1，和self.mark_type统一
+            # for [w1, w2], [h1, h2], [a1, a2], [r1, r2], ix in zip(width_limit, height_limit, area_limit,
+            #                                                       rectangularity_limit, range(len(width_limit))):
+            #     if (a1 < area < a2) and ((w1 < w < w2 and h1 < h < h2) or (w1 < h < w2 and h1 < w < h2)) and (
+            #             r1 < area / (w * h) < r2):
+            #         mark_ok = 1
+            #         self.mark_type_ix = ix
+            #         break    # 先验证是否为菱形，如果在菱形的范围内，直接跳过，否则验证是否在圆形范围内
+
+            # 矩形度判断
+            rectangularity = area / (w * h)
+            if 0.5 < rectangularity <= 0.85:
+                self.mark_type_ix = 1   # 圆形
+            elif 1 >= rectangularity > 0.85:
+                self.mark_type_ix = 0   # 菱形
+
+            if self.mark_type_ix == self.mark_type:
+                mark_ok = 1   # 计算出的矩形度和设置的mark_type一致
+
             if mark_ok == 0:
                 continue
-            if self.mark_type_ix != self.mark_type:
-                continue
 
-            # 计算色标中心点
+
+            # 计算色标中心点   在色标中点的一定范围内搜索，HSV的h平均值
             x_center, y_center = rect[0]
-            print(x_center, y_center)
+            # print(x_center, y_center)
             hValue = img_HSV[int(y_center),int(x_center)][0]
             hValue_Center = img_HSV[int(y_center), int(x_center)][0]
             hValues = []
             hValue_min = img_HSV[int(y_center),int(x_center)][0]
             hValue_max = img_HSV[int(y_center),int(x_center)][0]
+            # int(max((y_center - h/4),0) 排除图片顶部
+            # int(min((y_center + h/4 + 1),img.shape[0])) 排除图片底部
             for y_mark in range(int(max((y_center - h/4),0)),int(min((y_center + h/4 + 1),img.shape[0]))):
                 for x_mark in range(int(max((x_center - w/4),0)), int(min((x_center + w/4 + 1),img.shape[1]))):
                     if img_HSV[int(y_mark ),int(x_mark)][0] > hValue_max:
@@ -308,10 +327,10 @@ class MarkDetect:
                         hValue_min = img_HSV[int(y_mark), int(x_mark)][0]
                     hValues.append(img_HSV[int(y_mark ),int(x_mark)][0])
             hValues = sorted(hValues)
-            hValue = hValues[int(len(hValues)/2)]
+            hValue = hValues[int(len(hValues)/2)]   # hValues排序后，取中点值
 
 
-
+            # 搜索HSV的v平均值
             vValue = img_HSV[int(y_center),int(x_center)][2]
             vValues = []
             for y_mark in range(int(max((y_center - h/4),0)),int(min((y_center + h/4 + 1),img.shape[0]))):
