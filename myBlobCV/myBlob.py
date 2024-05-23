@@ -6,12 +6,12 @@ import math
 head_tail_distance_mm = 14 #落地首尾标
 C1 = 0
 C2 = 0
-
+# 0-青色， 1-红， 2-黄， 3-黑
 class MarkDetect:
     def __init__(self):
         global head_tail_distance_mm
         # 调试控制参数
-        self.plt_show = 1  # 是否进行检测过程的图片显示
+        self.plt_show = 0  # 是否进行检测过程的图片显示
         self.profile_enable = 0  # 是否分析代码耗时
 
         ### 设置初始状态下的长度范围，对应像素宽的物理宽
@@ -102,7 +102,7 @@ class MarkDetect:
         self.detect_step = 0
         result_gray, img_, binary_img = self.mark_detect_single_channel(img_in, img_HSV, self.detect_step, n=scaling)
 
-        # 精检测
+        # # 工艺二：找出粗检测的范围，进行精检测
         if scaling != 1:
             accurate_result = []
             for x_center, y_center, cnt, rect, box, *o in result_gray:
@@ -137,25 +137,31 @@ class MarkDetect:
                 self.C = C2
             else:
                 self.C = 4
+
+            # 将检测范围改为y方向的小范围内，大概100多的像素范围
             ymax, ymin = result_pos_gray[:, 1].max(), result_pos_gray[:, 1].min()
             ymin = int(max(ymin - self.mark_height[self.mark_type_ix] - 20, 0))
             ymax = int(min(ymax + self.mark_height[self.mark_type_ix] + 20, img.shape[0]))
+
             img_R_channel = img[ymin:ymax, :, 0]
             img_HSV = img[ymin:ymax, :]
             img_HSV = cv2.cvtColor(img_HSV, cv2.COLOR_RGB2HSV)
             self.detect_step = 2
+
+            self.plt_show = 0   # 检测补测部分的代码
             result_R_channel, img_, binary_img = self.mark_detect_single_channel(img_R_channel, img_HSV, self.detect_step,
                                                                                  n=1, xmin=0, ymin=ymin)
             result_pos_R_channel = np.array(
                 [[x_center, y_center, rect[2], color, mark_Value, detect_step, meangray_dis, rectangularity] for
                  x_center, y_center, cnt, rect, box, color, mark_Value, detect_step, meangray_dis, rectangularity, *o in
                  result_R_channel])
+
             if C1 != 0:
                 self.C = C1
             else:
                 self.C = 3
 
-                # 第二次检测出至少一个色标的情况下，尝试合并
+            # 第二次检测出至少一个色标的情况下，尝试合并
             if len(result_R_channel) >= 1:
                 # result_pos_R_channel = result_pos_R_channel[np.argsort(result_pos_R_channel[:, 0])]  # 排序
                 for i, r in enumerate(result_pos_R_channel):  # i序号 r内容
@@ -163,6 +169,19 @@ class MarkDetect:
                     if np.abs(x_distance).min() > (
                             self.mark_height[self.mark_type_ix] + self.mark_width[self.mark_type_ix]) * 0.5:
                         result_pos = np.concatenate((result_pos, result_pos_R_channel[i:i + 1]), axis=0)
+
+        # 对检测结果中明显存在角度偏差的菱形对象进行删除
+        if self.mark_type == 0:
+            # 计算中点（平均值）
+            midpoint = np.mean(result_pos[:, 2])
+            # 计算每个数据点与中点的绝对偏差
+            deviations = np.abs(result_pos[:, 2] - midpoint)
+            # 找到偏离度较大的值
+            n_outliers = result_pos.shape[0] - self.mark_num
+            outlier_indices = np.argsort(deviations)[-n_outliers:]
+
+        result_pos = np.delete(result_pos, outlier_indices, axis=0)
+
 
         if result_pos.shape[0] >= 3:  # 至少检出3个时，则下一次检测色标根据本次色标截取ROI
             # 将色标在图中的大致位置记录下来，下次检测时先默认检测该大致位置内的图片
@@ -240,16 +259,17 @@ class MarkDetect:
         # 1：表示每个点有一个维度。
         # 2：表示每个点有两个值，分别是 x 和 y 坐标。
         # 打印包含轮廓的图片用于测试
-        # for i, contour in enumerate(contours):
-        #     cnt_area = cv2.contourArea(contour)
-        #     for [a1, a2] in area_limit:
-        #         if a1 < cnt_area < a2:
-        #             # 在图片显示面积符合要求的图形
-        #             print("No: {}, Area: {}".format(i, cnt_area))
-        #             cv2.drawContours(img_HSV, contours, i, (0, 0, 255), 3)  # 用红色线条绘制第一个轮廓
-        # cv2.imshow('binary_img', img_HSV)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
+        if self.plt_show == 1:
+            for i, contour in enumerate(contours):
+                cnt_area = cv2.contourArea(contour)
+                for [a1, a2] in area_limit:
+                    if a1 < cnt_area < a2:
+                        # 在图片显示面积符合要求的图形
+                        print("No: {}, Area: {}".format(i, cnt_area))
+                        cv2.drawContours(img_HSV, contours, i, (0, 0, 255), 3)  # 用红色线条绘制第一个轮廓
+            cv2.imshow('binary_img', img_HSV)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
         ### 输出黑白图，用户调试CV参数
         # cv2.imshow("draw",binary_img)
@@ -283,9 +303,10 @@ class MarkDetect:
             #     continue  # 菱形角度判断
 
             # 再综合判断一下，同时确定是哪种类型的色标，面积长宽矩形度色标类型判断 根据矩形度判断是否一致
-            mark_ok = 0
 
-            # ! 以下这段逻辑混乱，重构矩形度判断函数
+
+            # ! 以下这段逻辑混乱，建议重构矩形度判断函数
+            # mark_ok = 0
             # self.mark_type_ix = -1  # ix这里选择range(len(width_limit))，实际上就是0和1，和self.mark_type统一
             # for [w1, w2], [h1, h2], [a1, a2], [r1, r2], ix in zip(width_limit, height_limit, area_limit,
             #                                                       rectangularity_limit, range(len(width_limit))):
@@ -296,14 +317,7 @@ class MarkDetect:
             #         break    # 先验证是否为菱形，如果在菱形的范围内，直接跳过，否则验证是否在圆形范围内
 
             # 矩形度判断
-            rectangularity = area / (w * h)
-            if 0.5 < rectangularity <= 0.85:
-                self.mark_type_ix = 1   # 圆形
-            elif 1 >= rectangularity > 0.85:
-                self.mark_type_ix = 0   # 菱形
-
-            if self.mark_type_ix == self.mark_type:
-                mark_ok = 1   # 计算出的矩形度和设置的mark_type一致
+            mark_ok = self.isMarkOk(area, w, h)
 
             if mark_ok == 0:
                 continue
@@ -429,6 +443,18 @@ class MarkDetect:
         return result, img, binary_img
 
 
+    def isMarkOk(self, area, w, h):
+        mark_ok = 0
+        rectangularity = area / (w * h)
+        if 0.5 < rectangularity <= 0.85:
+            self.mark_type_ix = 1  # 圆形
+        elif 1 >= rectangularity > 0.85:
+            self.mark_type_ix = 0  # 菱形
+
+        if self.mark_type_ix == self.mark_type:
+            mark_ok = 1  # 计算出的矩形度和设置的mark_type一致
+
+        return mark_ok
 
 if __name__ == "__main__":
 
