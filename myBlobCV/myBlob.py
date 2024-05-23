@@ -1,7 +1,21 @@
+# -*- coding: utf-8 -*-
+"""
+文件描述：用于检测色标图片的中心点位置，颜色等信息
+作者：Wenjie Cui，Dr. Zhu
+创建日期：2024.5.23
+最后修改日期：2024.5.23
+
+快速检索标志
+##    代表日常修改注释
+###   代表初次接收程序时的中点标注
+####  代表主要工艺注释
+"""
+
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import time
 
 head_tail_distance_mm = 14 #落地首尾标
 C1 = 0
@@ -81,7 +95,9 @@ class MarkDetect:
 
         # 计算原始大小
         origin_img_width, origin_img_height = img.shape[1], img.shape[0]
-
+        """
+        ####  工艺一：对整图resize，进行第一次粗检测        
+        """
         _ymin, _ymax, _enable = self.global_ymin, self.global_ymax, self.global_ROI_enable
         if _ymin >= 0 and _ymax >= 0 and _enable:
             img = img[self.global_ymin:self.global_ymax, :]
@@ -91,7 +107,6 @@ class MarkDetect:
             # img_in = cv2.cvtColor(img[0:-1:scaling, 0:-1:scaling, :], cv2.COLOR_RGB2GRAY)  # 起始终止步长，resize重新处理
             # img_HSV = cv2.cvtColor(img[0:-1:scaling, 0:-1:scaling, :], cv2.COLOR_RGB2HSV)  # 起始终止步长，resize重新处理
         else:
-            # 工艺一：对整图resize，进行第一次粗检测
             # 0:-1:scaling这个切片的含义是从第一个像素开始（索引0），到倒数第二个像素结束（索引-1，不包含-1）
             # 步长为scaling。这样就实现了对图像进行缩放的效果。
             img_in = cv2.cvtColor(img[0:-1:scaling, 0:-1:scaling, :], cv2.COLOR_RGB2GRAY)  # 将RGB图像转换为灰度图像
@@ -102,7 +117,9 @@ class MarkDetect:
         self.detect_step = 0
         result_gray, img_, binary_img = self.mark_detect_single_channel(img_in, img_HSV, self.detect_step, n=scaling)
 
-        # # 工艺二：找出粗检测的范围，进行精检测
+        """
+        #### 工艺二：找出粗检测的范围，进行精检测
+        """
         if scaling != 1:
             accurate_result = []
             for x_center, y_center, cnt, rect, box, *o in result_gray:
@@ -130,6 +147,9 @@ class MarkDetect:
              result_gray])  # 矩阵
         result_pos = result_pos_gray.copy()  # copy
 
+        """
+        #### 工艺三，测试结果数量不足就补测        
+        """
         # 如果只检测出了部分色标（大于一个，小于全部），则尝试单独取0通道检测其他色标
         if 1 <= len(result_gray) < self.mark_num:
             # 在上面灰度图检测出来色标的情况下，根据所有色标位置，截取色标所在周边的图像，取该截取图像的某个单独通道，再检测一遍
@@ -170,17 +190,19 @@ class MarkDetect:
                             self.mark_height[self.mark_type_ix] + self.mark_width[self.mark_type_ix]) * 0.5:
                         result_pos = np.concatenate((result_pos, result_pos_R_channel[i:i + 1]), axis=0)
 
-        # 对检测结果中明显存在角度偏差的菱形对象进行删除
-        if self.mark_type == 0:
+        """
+        ## 2024.5.23 对检测结果中明显存在角度偏差的菱形对象进行删除
+        ## 只有在检测结果result_pos的数量大于self.mark_num时，才会执行该操作。
+        """
+        if self.mark_type == 0 and result_pos.shape[0] > self.mark_num:
             # 计算中点（平均值）
             midpoint = np.mean(result_pos[:, 2])
             # 计算每个数据点与中点的绝对偏差
             deviations = np.abs(result_pos[:, 2] - midpoint)
             # 找到偏离度较大的值
             n_outliers = result_pos.shape[0] - self.mark_num
-            outlier_indices = np.argsort(deviations)[-n_outliers:]
-
-        result_pos = np.delete(result_pos, outlier_indices, axis=0)
+            outlier_indices = np.argsort(deviations)[-n_outliers:]  # 如果n_outliers=0， 则所有索引都会包含，result_pos会被删光
+            result_pos = np.delete(result_pos, outlier_indices, axis=0)
 
 
         if result_pos.shape[0] >= 3:  # 至少检出3个时，则下一次检测色标根据本次色标截取ROI
@@ -304,8 +326,9 @@ class MarkDetect:
 
             # 再综合判断一下，同时确定是哪种类型的色标，面积长宽矩形度色标类型判断 根据矩形度判断是否一致
 
-
-            # ! 以下这段逻辑混乱，建议重构矩形度判断函数
+            """
+            ## 2024.5.23 以下这段逻辑混乱，建议重构矩形度判断函数            
+            """
             # mark_ok = 0
             # self.mark_type_ix = -1  # ix这里选择range(len(width_limit))，实际上就是0和1，和self.mark_type统一
             # for [w1, w2], [h1, h2], [a1, a2], [r1, r2], ix in zip(width_limit, height_limit, area_limit,
@@ -443,10 +466,13 @@ class MarkDetect:
         return result, img, binary_img
 
 
+    """
+    ## 2024.5.23 判断矩形度的函数
+    """
     def isMarkOk(self, area, w, h):
         mark_ok = 0
         rectangularity = area / (w * h)
-        if 0.5 < rectangularity <= 0.85:
+        if 0.5 < rectangularity <= 0.85: # 这里的0.5 ~ 0.85是magic number，建议后期规范化
             self.mark_type_ix = 1  # 圆形
         elif 1 >= rectangularity > 0.85:
             self.mark_type_ix = 0  # 菱形
@@ -460,11 +486,59 @@ if __name__ == "__main__":
 
     mark_detect = MarkDetect()
 
+    # 计算开始时间
+    start_time = time.time()
+
+
     ### 使用本地图片覆盖掉获取的图片，用于调试
-    img_default = cv2.imdecode(np.fromfile("./mypic/Image__2024-04-24__ExposTime50ms.jpg", dtype=np.uint8), 1)
+
+    # TODO: 2024.5.23，测试Image__2024-04-24__ExposTime100ms.jpg，的红标会检测为黑色，需要矫正
+    img_default = cv2.imdecode(np.fromfile("./mypic/Image__2024-04-24__ExposTime100ms.jpg", dtype=np.uint8), 1)
 
     detection_success, result_pos = mark_detect.mark_detect(img_default)
 
+    # 计算结束时间
+    end_time = time.time()
+
+    execution_time = (end_time - start_time) * 1000
+    print("程序运行时间：", execution_time, "毫秒")
+
+    """
+    2024.5.23 检测结果打印
+    """
+    if detection_success:
+        print("检测成功")
+    else:
+        print("检测失败")
+
+    marks_typ = ["菱形", "圆形"]
+    colors_typ = ["青", "红", "黄", "黑"]
+
+    for i in range(result_pos.shape[0]):
+        """
+        0, 1, 2, 3, 4
+        x_center, y_center, rect[2], color, mark_Value
+
+        0：菱形标，1：圆形标
+
+        0-青色， 1-红， 2-黄， 3-黑
+        """
+
+        xpos = result_pos[i, 0]
+        ypos = result_pos[i, 1]
+        angle = result_pos[i, 2]
+        color_iter = int(result_pos[i, 3])
+        mark_iter = int(result_pos[i, 4])
+
+        print("======第 {} 个检测结果======".format(i+1))
+        print("x坐标: {:.2f}, y坐标: {:.2f}, 角度： {:.2f}".format(xpos, ypos, angle))
+        print("颜色： {}".format(colors_typ[color_iter]))
+        # print("颜色类型： {}, 图标类型 {}".format(colors_typ[color_iter], marks_typ[mark_iter]))
+
+
+    """
+    2024.5.23 将结果打印到图片上
+    """
     for row in result_pos:
         # print("No: {}, Area: {}".format(i, cnt_area))
         point = (int(row[0]), int(row[1]))
@@ -473,5 +547,5 @@ if __name__ == "__main__":
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    print(detection_success)
-    print(result_pos)
+
+
