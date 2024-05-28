@@ -16,7 +16,7 @@ from utility import *
 
 
 class PaintMachineModbusServer:
-    def __init__(self, ipStr: str, yaml_path: str):
+    def __init__(self, ipStr: str):
 
         self.modbus_server = self.modbusInit(ipStr)
 
@@ -202,8 +202,7 @@ class PaintMachineModbusServer:
 
 if __name__ == "__main__":
     ipStr = "127.0.0.1"
-    config_path = "config.yaml"
-    print_modbus = PaintMachineModbusServer(ipStr, config_path)
+    print_modbus = PaintMachineModbusServer(ipStr)
 
     # 测试用数据
     result_pos = [

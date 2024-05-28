@@ -16,12 +16,28 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import time
-
+from array import array
 import yaml
 
 
 class MarkDetect:
     def __init__(self, yaml_path: str):
+
+        self.C2 = None
+        self.C1 = None
+        self.C = None
+        self.adaptive_block = None
+        self.blur_kernel = None
+        self.scaling = None
+        self.limit = None
+        self.rectangularity = None
+        self.mark_height = None
+        self.mark_width = None
+        self.mark_type = None
+        self.mark_num = None
+        self.resolution_X = None
+        self.head_tail_distance_mm = None
+        self.field_of_view_X_mm = None
 
         self.load_para(yaml_path)
 
@@ -39,28 +55,27 @@ class MarkDetect:
         self.par = []
         self.mark_area = []
 
-
         # 两个相机，但是目前该函数中只使用一个相机，两个相机在两个线程中分别用该函数实现，所以这里self.camera_ix直接设置为0，2相机可行？
         self.global_ymin = -1
         self.global_ymax = -1
         self.global_ROI_enable = 1
-        self.camera_ix = 0 #改！
+        self.camera_ix = 0  # 改！
         self.par_init()
 
-    def load_para(self, yaml_path: str):
+    def load_para(self, yaml_path: str) -> None:
         # 加载并读取 YAML 文件
         with open(yaml_path, 'r', encoding='utf-8') as file:
             data = yaml.safe_load(file)
 
         ### 设置初始状态下的长度范围，对应像素宽的物理宽
-        self.field_of_view_X_mm = data['field_of_view_X_mm']  #长度 落地
+        self.field_of_view_X_mm = data['field_of_view_X_mm']  # 长度 落地
         self.head_tail_distance_mm = data['head_tail_distance_mm']
         self.resolution_X = data['resolution_X']
         self.mark_num = data['mark_num']
         # 菱形标+圆形标
         self.mark_type = data['mark_type']  # 0：菱形标，1：圆形标
 
-        self.mark_width = data['blob']['mark_width'] # 菱形对角线 圆形直径
+        self.mark_width = data['blob']['mark_width']  # 菱形对角线 圆形直径
         self.mark_height = data['blob']['mark_height']
         self.rectangularity = data['blob']['rectangularity']  # PI/4 = 0.785
         self.limit = data['blob']['limit']  # [0.7, 1.2]，筛选面积和长宽的最大最小倍数范围
@@ -73,7 +88,12 @@ class MarkDetect:
         self.C1 = data['blob']['C1']
         self.C2 = data['blob']['C2']
 
-    def par_init(self):
+    def update_para(self, para: array) -> None:
+        self.head_tail_distance_mm = para[0]
+        self.C1 = para[1]
+        self.C2 = para[2]
+
+    def par_init(self) -> None:
         # 圆标直径1-1.5mm，转换为对应的像素大小，（2048/50）* [1, 1.5]
         self.mark_width = [i * self.resolution_X / self.field_of_view_X_mm for i in self.mark_width]
         self.mark_height = [i * self.resolution_X / self.field_of_view_X_mm for i in self.mark_height]
@@ -94,8 +114,10 @@ class MarkDetect:
             self.par.append(
                 [n, n2, area_limit, width_limit, height_limit, rectangularity_limit, blur_kernel, adaptive_block])
 
+    def mark_detect(self, img, para: array):
+        # 更新参数
+        self.update_para(para)
 
-    def mark_detect(self, img):
         self.head_tail_pixel = float(self.head_tail_distance_mm / self.field_of_view_X_mm) * 2048
 
         scaling = self.scaling
@@ -175,8 +197,9 @@ class MarkDetect:
             img_HSV = cv2.cvtColor(img_HSV, cv2.COLOR_RGB2HSV)
             self.detect_step = 2
 
-            self.plt_show = 0   # 检测补测部分的代码
-            result_R_channel, img_, binary_img = self.mark_detect_single_channel(img_R_channel, img_HSV, self.detect_step,
+            self.plt_show = 0  # 检测补测部分的代码
+            result_R_channel, img_, binary_img = self.mark_detect_single_channel(img_R_channel, img_HSV,
+                                                                                 self.detect_step,
                                                                                  n=1, xmin=0, ymin=ymin)
             result_pos_R_channel = np.array(
                 [[x_center, y_center, rect[2], color, mark_Value, detect_step, meangray_dis, rectangularity] for
@@ -210,7 +233,6 @@ class MarkDetect:
             n_outliers = result_pos.shape[0] - self.mark_num
             outlier_indices = np.argsort(deviations)[-n_outliers:]  # 如果n_outliers=0， 则所有索引都会包含，result_pos会被删光
             result_pos = np.delete(result_pos, outlier_indices, axis=0)
-
 
         if result_pos.shape[0] >= 3:  # 至少检出3个时，则下一次检测色标根据本次色标截取ROI
             # 将色标在图中的大致位置记录下来，下次检测时先默认检测该大致位置内的图片
@@ -267,11 +289,11 @@ class MarkDetect:
 
         return detection_success, result_pos
 
-    def mark_detect_single_channel(self, img, img_HSV, detect_step,n=1, xmin=0, ymin=0):
+    def mark_detect_single_channel(self, img, img_HSV, detect_step, n=1, xmin=0, ymin=0):
         if n == 1:
             n, n2, area_limit, width_limit, height_limit, rectangularity_limit, blur_kernel, adaptive_block = self.par[
                 0]
-        else:   # n为scaling，如果scaling不为1，则执行 self.par[1]
+        else:  # n为scaling，如果scaling不为1，则执行 self.par[1]
             n, n2, area_limit, width_limit, height_limit, rectangularity_limit, blur_kernel, adaptive_block = self.par[
                 1]
 
@@ -322,7 +344,7 @@ class MarkDetect:
             w, h = rect[1]
 
             size_ok = 0
-            for [w1, w2], [h1, h2] in zip(width_limit, height_limit):  #外接矩形宽高判断
+            for [w1, w2], [h1, h2] in zip(width_limit, height_limit):  # 外接矩形宽高判断
                 if (w1 < w < w2 and h1 < h < h2) or (w1 < h < w2 and h1 < w < h2):
                     size_ok = 1
                     break
@@ -352,36 +374,34 @@ class MarkDetect:
             if mark_ok == 0:
                 continue
 
-
             # 计算色标中心点   在色标中点的一定范围内搜索，HSV的h平均值
             x_center, y_center = rect[0]
             # print(x_center, y_center)
-            hValue = img_HSV[int(y_center),int(x_center)][0]
+            hValue = img_HSV[int(y_center), int(x_center)][0]
             hValue_Center = img_HSV[int(y_center), int(x_center)][0]
             hValues = []
-            hValue_min = img_HSV[int(y_center),int(x_center)][0]
-            hValue_max = img_HSV[int(y_center),int(x_center)][0]
+            hValue_min = img_HSV[int(y_center), int(x_center)][0]
+            hValue_max = img_HSV[int(y_center), int(x_center)][0]
             # int(max((y_center - h/4),0) 排除图片顶部
             # int(min((y_center + h/4 + 1),img.shape[0])) 排除图片底部
-            for y_mark in range(int(max((y_center - h/4),0)),int(min((y_center + h/4 + 1),img.shape[0]))):
-                for x_mark in range(int(max((x_center - w/4),0)), int(min((x_center + w/4 + 1),img.shape[1]))):
-                    if img_HSV[int(y_mark ),int(x_mark)][0] > hValue_max:
-                        hValue_max = img_HSV[int(y_mark ),int(x_mark)][0]
-                    elif img_HSV[int(y_mark ),int(x_mark)][0] < hValue_min:
+            for y_mark in range(int(max((y_center - h / 4), 0)), int(min((y_center + h / 4 + 1), img.shape[0]))):
+                for x_mark in range(int(max((x_center - w / 4), 0)), int(min((x_center + w / 4 + 1), img.shape[1]))):
+                    if img_HSV[int(y_mark), int(x_mark)][0] > hValue_max:
+                        hValue_max = img_HSV[int(y_mark), int(x_mark)][0]
+                    elif img_HSV[int(y_mark), int(x_mark)][0] < hValue_min:
                         hValue_min = img_HSV[int(y_mark), int(x_mark)][0]
-                    hValues.append(img_HSV[int(y_mark ),int(x_mark)][0])
+                    hValues.append(img_HSV[int(y_mark), int(x_mark)][0])
             hValues = sorted(hValues)
-            hValue = hValues[int(len(hValues)/2)]   # hValues排序后，取中点值
-
+            hValue = hValues[int(len(hValues) / 2)]  # hValues排序后，取中点值
 
             # 搜索HSV的v平均值
-            vValue = img_HSV[int(y_center),int(x_center)][2]
+            vValue = img_HSV[int(y_center), int(x_center)][2]
             vValues = []
-            for y_mark in range(int(max((y_center - h/4),0)),int(min((y_center + h/4 + 1),img.shape[0]))):
-                for x_mark in range(int(max((x_center - w/4),0)), int(min((x_center + w/4 + 1),img.shape[1]))):
-                    vValues.append(img_HSV[int(y_mark ),int(x_mark)][2])
+            for y_mark in range(int(max((y_center - h / 4), 0)), int(min((y_center + h / 4 + 1), img.shape[0]))):
+                for x_mark in range(int(max((x_center - w / 4), 0)), int(min((x_center + w / 4 + 1), img.shape[1]))):
+                    vValues.append(img_HSV[int(y_mark), int(x_mark)][2])
             vValues = sorted(vValues)
-            vValue = vValues[int(len(vValues)/2)]
+            vValue = vValues[int(len(vValues) / 2)]
             # vValue = min(vValues)
             mark_V = int(vValue)
 
@@ -394,19 +414,18 @@ class MarkDetect:
             #     hValues = sorted(hValues)
             #     hValue = hValues[int(len(hValues)/2)]
 
-
             mark_Value = int(hValue)
             if 5 < mark_Value < 30:
-                color = 0 #青
+                color = 0  # 青
             elif 75 <= mark_Value <= 120:
-                color = 2 #黄
+                color = 2  # 黄
             elif 140 < mark_Value < 169:
-                color = 1 #红
+                color = 1  # 红
             # elif 173 < mark_Value <= 180:
             #     color = 3 #黑
 
-            if (mark_V < 90) and ((int(hValue_min) < 6) or (int(hValue_max) > 173)): #和照片亮度相关！光圈，光照，曝光时间
-                 color = 3
+            if (mark_V < 90) and ((int(hValue_min) < 6) or (int(hValue_max) > 173)):  # 和照片亮度相关！光圈，光照，曝光时间
+                color = 3
 
             x_center, y_center = x_center + xmin, y_center + ymin
 
@@ -437,20 +456,21 @@ class MarkDetect:
             else:
                 meangray_dis, rectangularity, area_rate, w_rate, h_rate = 0, 0, 0, 0, 0
 
-            result.append([x_center, y_center, cnt, rect, box, color, mark_Value, detect_step, meangray_dis, rectangularity, area_rate, w_rate, h_rate])
+            result.append(
+                [x_center, y_center, cnt, rect, box, color, mark_Value, detect_step, meangray_dis, rectangularity,
+                 area_rate, w_rate, h_rate])
 
             # for i in range(0, len(result)-1):
             #     if (result[:, 7].min() <= result[i, 7] <= (result[:, 7].min() + 20)) and (result[i, 7] < 90):
-                    # result[i, 5] = 3
+            # result[i, 5] = 3
 
             # for i, r in enumerate(result):  # i序号 r内容
             #     if (result[:, 7].min() <= result[i, 7] <= (result[:, 7].min() + 20)) and (result[i, 7] < 90):
             #         result[i, 5] = 3
-                # x_distance = result[:, 0] - r[0]  # 上次和这次x差别
-                # if np.abs(x_distance).min() > (
-                #         self.mark_height[self.mark_type_ix] + self.mark_width[self.mark_type_ix]) * 0.5:
-                #     result_pos = np.concatenate((result_pos, result_pos_R_channel[i:i + 1]), axis=0)
-
+            # x_distance = result[:, 0] - r[0]  # 上次和这次x差别
+            # if np.abs(x_distance).min() > (
+            #         self.mark_height[self.mark_type_ix] + self.mark_width[self.mark_type_ix]) * 0.5:
+            #     result_pos = np.concatenate((result_pos, result_pos_R_channel[i:i + 1]), axis=0)
 
         if self.plt_show:
             binary_img_plt = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2RGB)
@@ -472,14 +492,14 @@ class MarkDetect:
 
         return result, img, binary_img
 
-
     """
     ## 2024.5.23 判断矩形度的函数
     """
+
     def isMarkOk(self, area, w, h):
         mark_ok = 0
         rectangularity = area / (w * h)
-        if 0.5 < rectangularity <= 0.85: # 这里的0.5 ~ 0.85是magic number，建议后期规范化
+        if 0.5 < rectangularity <= 0.85:  # 这里的0.5 ~ 0.85是magic number，建议后期规范化
             self.mark_type_ix = 1  # 圆形
         elif 1 >= rectangularity > 0.85:
             self.mark_type_ix = 0  # 菱形
@@ -489,6 +509,7 @@ class MarkDetect:
 
         return mark_ok
 
+
 if __name__ == "__main__":
 
     config_path = 'config.yaml'
@@ -497,7 +518,6 @@ if __name__ == "__main__":
 
     # 计算开始时间
     start_time = time.time()
-
 
     ### 使用本地图片覆盖掉获取的图片，用于调试
 
@@ -541,11 +561,10 @@ if __name__ == "__main__":
         color_iter = int(result_pos[i, 3])
         mark_iter = int(result_pos[i, 4])
 
-        print("======第 {} 个检测结果======".format(i+1))
+        print("======第 {} 个检测结果======".format(i + 1))
         print("x坐标: {:.2f}, y坐标: {:.2f}, 角度： {:.2f}".format(xpos, ypos, angle))
         print("颜色： {}".format(colors_typ[color_iter]))
         # print("颜色类型： {}, 图标类型 {}".format(colors_typ[color_iter], marks_typ[mark_iter]))
-
 
     """
     2024.5.23 将结果打印到图片上
@@ -557,6 +576,3 @@ if __name__ == "__main__":
     cv2.imshow('binary_img', img_default)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
-
-
