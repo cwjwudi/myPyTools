@@ -51,11 +51,13 @@ def run_in_thread(func):
 
 
 def get_img():
+    # TODO 此处img的获取需要更改为相应的等待相机获取的函数
     img = cv2.imdecode(np.fromfile("mypic/Image__2024-04-24__ExposTime50ms.jpg", dtype=np.uint8), 1)
     return img
 
 
 def update_para(ix: int):
+    # 从相应的modbus存储区，更新PrintMachine的参数
     data = print_modbus.readPrintMachinePara(camera_ix=ix)
     # [mark_shape, mark_size, size_limit_min, size_limit_max, exposure_time, head_tail_distance_mm,
     #  image_save, img_view, camera_run_type, reconnectCmd, C1, C2]
@@ -70,14 +72,16 @@ def pre_detect(ix: int):
 
 
 def post_detect(result_pos, ix: int):
-    pass
+    # 将计算后的结果存入到相应的modbus存储区
+    print_modbus.savePrintMachineData(result_pos=result_pos, ix=ix)
 
 
 @run_in_thread
 def run(ix: int):
-    # rl
     mark_detect = MarkDetect(config_path)
-    interval = 0.1
+    interval = 0.1  # 设置循环时间
+
+    # TODO 死循环是否合适，应该加入合适的线程销毁机制
     while True:
         start_time = time.time()
 
@@ -97,9 +101,12 @@ if __name__ == "__main__":
     config_path = 'config.yaml'
 
     globalData = GlobalData(config_path)
+    # modbus会启动一个线程作为server，处理相应请求
     print_modbus = PaintMachineModbusServer(ipStr="127.0.0.1")
 
-    run(0)
-    run(1)
+    # 2个相机，分2个线程获取相应数据
+    run(ix=0)
+    run(ix=1)
 
+    # TODO 相应的线程销毁，有没有更合适的方式
     print("main thread over")
