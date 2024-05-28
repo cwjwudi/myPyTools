@@ -17,13 +17,14 @@ import matplotlib.pyplot as plt
 import math
 import time
 
-head_tail_distance_mm = 14 #落地首尾标
-C1 = 0
-C2 = 0
-# 0-青色， 1-红， 2-黄， 3-黑
+import yaml
+
+
 class MarkDetect:
-    def __init__(self):
-        global head_tail_distance_mm
+    def __init__(self, yaml_path: str):
+
+        self.load_para(yaml_path)
+
         # 调试控制参数
         self.plt_show = 0  # 是否进行检测过程的图片显示
         self.profile_enable = 0  # 是否分析代码耗时
@@ -65,6 +66,16 @@ class MarkDetect:
         self.camera_ix = 0 #改！
         self.par_init()
 
+    def load_para(self, yaml_path: str):
+        # 加载并读取 YAML 文件
+        with open(yaml_path, 'r') as file:
+            data = yaml.safe_load(file)
+
+        self.head_tail_distance_mm = data['head_tail_distance_mm']
+        self.C1 = data['C1']
+        self.C2 = data['C2']
+
+
     def par_init(self):
         # 圆标直径1-1.5mm，转换为对应的像素大小，（2048/50）* [1, 1.5]
         self.mark_width = [i * self.resolution_X / self.field_of_view_X_mm for i in self.mark_width]
@@ -88,8 +99,7 @@ class MarkDetect:
 
 
     def mark_detect(self, img):
-        global head_tail_distance_mm, C1, C2
-        self.head_tail_pixel = float(head_tail_distance_mm / self.field_of_view_X_mm) * 2048
+        self.head_tail_pixel = float(self.head_tail_distance_mm / self.field_of_view_X_mm) * 2048
 
         scaling = self.scaling
 
@@ -153,8 +163,8 @@ class MarkDetect:
         # 如果只检测出了部分色标（大于一个，小于全部），则尝试单独取0通道检测其他色标
         if 1 <= len(result_gray) < self.mark_num:
             # 在上面灰度图检测出来色标的情况下，根据所有色标位置，截取色标所在周边的图像，取该截取图像的某个单独通道，再检测一遍
-            if C2 != 0:
-                self.C = C2
+            if self.C2 != 0:
+                self.C = self.C2
             else:
                 self.C = 4
 
@@ -176,8 +186,8 @@ class MarkDetect:
                  x_center, y_center, cnt, rect, box, color, mark_Value, detect_step, meangray_dis, rectangularity, *o in
                  result_R_channel])
 
-            if C1 != 0:
-                self.C = C1
+            if self.C1 != 0:
+                self.C = self.C1
             else:
                 self.C = 3
 
@@ -484,7 +494,9 @@ class MarkDetect:
 
 if __name__ == "__main__":
 
-    mark_detect = MarkDetect()
+    config_path = 'config.yaml'
+
+    mark_detect = MarkDetect(config_path)
 
     # 计算开始时间
     start_time = time.time()
@@ -493,7 +505,7 @@ if __name__ == "__main__":
     ### 使用本地图片覆盖掉获取的图片，用于调试
 
     # TODO: 2024.5.23，测试Image__2024-04-24__ExposTime100ms.jpg，的红标会检测为黑色，需要矫正
-    img_default = cv2.imdecode(np.fromfile("mypic/Image__2024-04-24__ExposTime100ms.jpg", dtype=np.uint8), 1)
+    img_default = cv2.imdecode(np.fromfile("mypic/Image__2024-04-24__ExposTime50ms.jpg", dtype=np.uint8), 1)
 
     detection_success, result_pos = mark_detect.mark_detect(img_default)
 
