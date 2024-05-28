@@ -55,5 +55,5 @@ def detect_circles_and_draw_rectangles(image_path):
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    image_path = 'mypic/image_14us.jpg'
+    image_path = '../myPrintMachine/mypic/image_14us.jpg'
     detect_circles_and_draw_rectangles(image_path)

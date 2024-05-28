@@ -24,7 +24,7 @@ def update_blob_params(x):
 
 
 # 读取图像
-im = cv2.imread("mypic/image_14us.jpg", cv2.IMREAD_GRAYSCALE)
+im = cv2.imread("../myPrintMachine/mypic/image_14us.jpg", cv2.IMREAD_GRAYSCALE)
 
 # 创建Blob检测器
 params = cv2.SimpleBlobDetector_Params()

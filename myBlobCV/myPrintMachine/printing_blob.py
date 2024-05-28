@@ -493,9 +493,11 @@ if __name__ == "__main__":
     ### 使用本地图片覆盖掉获取的图片，用于调试
 
     # TODO: 2024.5.23，测试Image__2024-04-24__ExposTime100ms.jpg，的红标会检测为黑色，需要矫正
-    img_default = cv2.imdecode(np.fromfile("./mypic/Image__2024-04-24__ExposTime100ms.jpg", dtype=np.uint8), 1)
+    img_default = cv2.imdecode(np.fromfile("mypic/Image__2024-04-24__ExposTime100ms.jpg", dtype=np.uint8), 1)
 
     detection_success, result_pos = mark_detect.mark_detect(img_default)
+
+    print(result_pos)
 
     # 计算结束时间
     end_time = time.time()
