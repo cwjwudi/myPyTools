@@ -3,7 +3,7 @@
 文件描述：用于检测色标图片的中心点位置，颜色等信息
 作者：Wenjie Cui，Dr. Zhu
 创建日期：2024.5.23
-最后修改日期：2024.5.23
+最后修改日期：2024.5.28
 
 快速检索标志
 ##    代表日常修改注释
@@ -29,32 +29,13 @@ class MarkDetect:
         self.plt_show = 0  # 是否进行检测过程的图片显示
         self.profile_enable = 0  # 是否分析代码耗时
 
-        ### 设置初始状态下的长度范围，对应像素宽的物理宽
-        self.field_of_view_X_mm = 50  #长度 落地
-        self.resolution_X = 2048
-        self.mark_num = 5
-        # self.head_tail_pixel = 700
+        # 内部变量
         self.head_tail_x_pixel = 0
         self.head_tail_y_pixel = 0
         self.mark_detect_num = 0
         self.detect_step = 0
         self.mark_type_ix = -1
 
-
-
-        # 菱形标+圆形标
-
-        self.mark_type = 0  # 0：菱形标，1：圆形标
-        self.mark_width = [1, 1.5] # 菱形对角线 圆形直径
-        self.mark_height = [1, 1.5]
-        self.rectangularity = [1, 0.785]  # PI/4 = 0.785
-        self.limit = [0.6, 1.2]  # [0.7, 1.2]，筛选面积和长宽的最大最小倍数范围
-
-        # 检测算法相关参数
-        self.scaling = 3  # 3，先缩小3倍粗检测，时间花费和精度都比较合适
-        self.blur_kernel = 35  # 9，处理之前高斯滤波窗口大小，9比较合适
-        self.adaptive_block = 67  # 67，自适应二值化的窗口大小，对于目前测试的大小矩形标和三角标都较为合适
-        self.C = 3  # 12，自适应二值化的阈值偏差, 光亮直接相关！！！！！
         self.par = []
         self.mark_area = []
 
@@ -68,13 +49,29 @@ class MarkDetect:
 
     def load_para(self, yaml_path: str):
         # 加载并读取 YAML 文件
-        with open(yaml_path, 'r') as file:
+        with open(yaml_path, 'r', encoding='utf-8') as file:
             data = yaml.safe_load(file)
 
+        ### 设置初始状态下的长度范围，对应像素宽的物理宽
+        self.field_of_view_X_mm = data['field_of_view_X_mm']  #长度 落地
         self.head_tail_distance_mm = data['head_tail_distance_mm']
-        self.C1 = data['C1']
-        self.C2 = data['C2']
+        self.resolution_X = data['resolution_X']
+        self.mark_num = data['mark_num']
+        # 菱形标+圆形标
+        self.mark_type = data['mark_type']  # 0：菱形标，1：圆形标
 
+        self.mark_width = data['blob']['mark_width'] # 菱形对角线 圆形直径
+        self.mark_height = data['blob']['mark_height']
+        self.rectangularity = data['blob']['rectangularity']  # PI/4 = 0.785
+        self.limit = data['blob']['limit']  # [0.7, 1.2]，筛选面积和长宽的最大最小倍数范围
+
+        # 检测算法相关参数
+        self.scaling = data['blob']['scaling']  # 3，先缩小3倍粗检测，时间花费和精度都比较合适
+        self.blur_kernel = data['blob']['blur_kernel']  # 9，处理之前高斯滤波窗口大小，9比较合适
+        self.adaptive_block = data['blob']['adaptive_block']  # 67，自适应二值化的窗口大小，对于目前测试的大小矩形标和三角标都较为合适
+        self.C = data['blob']['C']  # 12，自适应二值化的阈值偏差, 光亮直接相关！！！！！
+        self.C1 = data['blob']['C1']
+        self.C2 = data['blob']['C2']
 
     def par_init(self):
         # 圆标直径1-1.5mm，转换为对应的像素大小，（2048/50）* [1, 1.5]

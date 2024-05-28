@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 """
 文件描述：用于色标检测的Modbus Slave通信
 作者：Wenjie Cui，Dr. Zhu
 创建日期：2024.5.27
-最后修改日期：2024.5.27
+最后修改日期：2024.5.28
 """
 
 import modbus_tk.defines as cst
