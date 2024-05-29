@@ -128,7 +128,7 @@ class PaintMachineModbusServer:
             img_view = 0
         if camera_run_type not in [0, 1]:
             camera_run_type = 0
-        if reconnectCmd not in [0, 1]:
+        if reconnectCmd not in [0, 1, 2]:
             reconnectCmd = 0
 
         return [mark_shape, mark_size, size_limit_min, size_limit_max, exposure_time, head_tail_distance_mm,
