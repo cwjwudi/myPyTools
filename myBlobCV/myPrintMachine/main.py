@@ -31,7 +31,6 @@ def get_para(ix: int):
     data = print_modbus.readPrintMachinePara(camera_ix=ix)
     # [mark_shape, mark_size, size_limit_min, size_limit_max, exposure_time, head_tail_distance_mm,
     #  image_save, img_view, camera_run_type, reconnectCmd, C1, C2]
-    globalData.stop_print_machine = data[-3]  # reconnectCmd
     para = array('i', [data[5], data[-2], data[-1]])  # head_tail_distance_mm, C1, C2
     return para
 
@@ -50,7 +49,7 @@ def post_detect(result_pos, ix: int):
 @run_in_thread
 def run(ix: int):
     mark_detector = MarkDetect(config_path)
-    interval = 1  # 设置循环时间
+    interval = 0.1  # 设置循环时间
 
     # TODO 死循环是否合适，应该加入合适的线程销毁机制
     while True:
@@ -70,9 +69,8 @@ def run(ix: int):
         wait_time = interval - task_time
         # print("ix={}, wait_time={:.2f}ms".format(ix, wait_time * 1000))
 
-        print(globalData.stop_print_machine)
         if globalData.stop_print_machine == 2:
-            print("try to break！")
+            # print("try to break！")
             break
 
         if wait_time > 0:
@@ -89,6 +87,16 @@ if __name__ == "__main__":
     # 2个相机，分2个线程获取相应数据
     camera_thread_ix0, camera_event_ix0 = run(ix=0)
     camera_thread_ix1, camera_event_ix1 = run(ix=1)
+
+    # 读取modbus的reconnectCmd标志
+    interval = 1  # 设置循环时间
+    while True:
+        data = print_modbus.server_databank.get_values(block_name='0', address=8, size=1)
+        globalData.stop_print_machine = data[0]  # reconnectCmd
+        time.sleep(interval)
+
+        if globalData.stop_print_machine == 2:
+            break
 
     # TODO 相应的线程销毁，有没有更合适的方式
     if globalData.stop_print_machine:

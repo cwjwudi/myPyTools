@@ -31,4 +31,3 @@ def stop_thread(thread: threading.Thread, event: threading.Event):
     if thread.is_alive():
         event.clear()
         thread.join()
-        print("Thread {} has been stoped!".format(thread.name))
