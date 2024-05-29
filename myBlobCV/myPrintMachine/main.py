@@ -8,8 +8,8 @@
 
 from printing_blob import MarkDetect
 from printing_modbus import PaintMachineModbusServer
-from printing_UI import WebApp
 from global_data import GlobalData
+from udp_img.udp_client import ImageSender
 from utility import *
 
 import threading
@@ -18,8 +18,6 @@ import yaml
 import cv2
 import numpy as np
 from array import array
-import mmap
-import base64
 
 
 def get_img(ix: int) -> None:
@@ -66,7 +64,7 @@ def run(ix: int):
         task_time = time.time() - start_time
 
         wait_time = interval - task_time
-        print("ix={}, wait_time={:.2f}ms".format(ix, wait_time * 1000))
+        # print("ix={}, wait_time={:.2f}ms".format(ix, wait_time * 1000))
 
         if globalData.stop_print_machine == 2:
             # print("try to break！")
@@ -74,6 +72,28 @@ def run(ix: int):
 
         if wait_time > 0:
             time.sleep(wait_time)
+
+@run_in_thread
+def run_udp_sender(ix: int):
+    sender = ImageSender()
+    interval = 1  # 设置循环时间
+    while True:
+        start_time = time.time()
+
+        response = sender.send_image(globalData.img_list[ix])
+        print(response)
+        # sender.close()
+
+        task_time = time.time() - start_time
+        wait_time = interval - task_time
+
+        if globalData.stop_print_machine == 2:
+            # print("try to break！")
+            break
+
+        if wait_time > 0:
+            time.sleep(wait_time)
+    sender.close()
 
 
 if __name__ == "__main__":
@@ -86,21 +106,13 @@ if __name__ == "__main__":
     # 2个相机，分2个线程获取相应数据
     camera_thread_ix0, camera_event_ix0 = run(ix=0)
     camera_thread_ix1, camera_event_ix1 = run(ix=1)
+    udp_thread_ix0, udp_event_ix0 = run_udp_sender(ix=0)
 
     # 读取modbus的reconnectCmd标志
     interval = 1  # 设置循环时间
-
-    with open("shared_memory.bin", "r+b") as f:
-        mm = mmap.mmap(f.fileno(), 0)
-
     while True:
         data = print_modbus.server_databank.get_values(block_name='0', address=8, size=1)
         globalData.stop_print_machine = data[0]  # reconnectCmd
-
-
-        # 写入数据到共享内存
-        img_base64 = base64.b64encode(globalData.img_list[0])
-        save_image_to_shared_memory(img_base64, 1024000)  # 1mb
 
         time.sleep(interval)
 
@@ -111,6 +123,7 @@ if __name__ == "__main__":
         print("start stop thread！")
         stop_thread(camera_thread_ix0, camera_event_ix0)
         stop_thread(camera_thread_ix1, camera_event_ix1)
+        stop_thread(udp_thread_ix0, udp_event_ix0)
         print_modbus.tcp_server.stop()
 
     print("main thread over")
