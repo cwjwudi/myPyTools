@@ -17,8 +17,8 @@ from utility import *
 
 class PaintMachineModbusServer:
     def __init__(self, ipStr: str):
-
-        self.modbus_server = self.modbusInit(ipStr)
+        self.tcp_server = None
+        self.server_databank = self.modbusInit(ipStr)
 
     def modbusInit(self, ipStr: str):
         """
@@ -40,10 +40,10 @@ class PaintMachineModbusServer:
             size(int):要获取的值的数量
         """
         # 创建从站总服务器
-        server = modbus_tcp.TcpServer(address=ipStr)  # address必须设置,port默认为502
-        server.start()
+        self.tcp_server = modbus_tcp.TcpServer(address=ipStr)  # address必须设置,port默认为502
+        self.tcp_server.start()
         # 创建从站
-        slave_1 = server.add_slave(1)  # slave_id = 1
+        slave_1 = self.tcp_server.add_slave(1)  # slave_id = 1
         # 为从站添加存储
         # 保持寄存器（Holding Registers）40001 - 40017
         slave_1.add_block(block_name='0', block_type=cst.HOLDING_REGISTERS, starting_address=0, size=17)
@@ -84,7 +84,7 @@ class PaintMachineModbusServer:
         mark_shape, mark_size, size_limit_min, size_limit_max, exposure_time, head_tail_distance_mm,
         image_save, img_view, camera_run_type, reconnectCmd, C1, C2
         """
-        modbusdata = self.modbus_server.get_values(block_name='0', address=0, size=17)  # 更换参数
+        modbusdata = self.server_databank.get_values(block_name='0', address=0, size=17)  # 更换参数
         mark_shape = modbusdata[0]
         mark_size = modbusdata[1] * 0.001  # um->mm
 
@@ -175,7 +175,7 @@ class PaintMachineModbusServer:
         values = []
         mark_num = min(result_pos.shape[0], 5)
         # 相机1，30115；相机2，30116。检测色标数目
-        self.modbus_server.set_values(block_name='1', address=100 + ix + 14, values=[mark_num])
+        self.server_databank.set_values(block_name='1', address=100 + ix + 14, values=[mark_num])
         pixel_pos_x = [0, 0, 0, 0, 0]
         pixel_pos_y = [0, 0, 0, 0, 0]
         color_mark = [0, 0, 0, 0, 0]
@@ -195,8 +195,8 @@ class PaintMachineModbusServer:
         values = values + pixel_pos_x_register + pixel_pos_y_register + color_register
 
         # 相机1，30117-30141；相机2，30142-30166。检测结果，x,y,颜色。
-        self.modbus_server.set_values(block_name='1', address=100 + ix * 25 + 16, values=values)
-        # print(self.modbus_server.get_values(block_name='1', address=100, size=74))
+        self.server_databank.set_values(block_name='1', address=100 + ix * 25 + 16, values=values)
+        # print(self.server_databank.get_values(block_name='1', address=100, size=74))
         return values
 
 

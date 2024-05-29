@@ -114,10 +114,7 @@ class MarkDetect:
             self.par.append(
                 [n, n2, area_limit, width_limit, height_limit, rectangularity_limit, blur_kernel, adaptive_block])
 
-    def mark_detect(self, img, para: array):
-        # 更新参数
-        self.update_para(para)
-
+    def mark_detect(self, img):
         self.head_tail_pixel = float(self.head_tail_distance_mm / self.field_of_view_X_mm) * 2048
 
         scaling = self.scaling
