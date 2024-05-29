@@ -33,6 +33,16 @@ class WebApp:
 
             return input_text + cmd_return_text
 
+        @self.app.route('/view_img', methods=['GET'])
+        def view_customers():
+            with open("image_base64.txt", "r") as f:
+                image_base64 = f.read()
+            # from base64Pic import pic
+            # image_base64 = pic
+
+            return render_template('view_img.html', image_base64=image_base64)
+
+
     def run(self):
         self.app.run(debug=True)
 
