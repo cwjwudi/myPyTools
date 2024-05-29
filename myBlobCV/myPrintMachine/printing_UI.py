@@ -10,21 +10,28 @@ class WebApp:
 
         @self.app.route('/')
         def index():
-            name = "Your Name"
-            introduction = "Welcome to my personal website!"
-            contact_info = "Contact me at: your_email@example.com"
+            name = "Printing Machine UI"
+            introduction = "This is a test of control UI for printing machine."
+            contact_info = "Contact me at: Wenjie.Cui@br-automation.com"
             return render_template('index.html', name=name, introduction=introduction,
                                    contact_info=contact_info)
 
         @self.app.route('/submit', methods=['POST'])
         def submit():
             user_input = request.form['user_input']
-            # print("User input:", user_input)
+            cmd_return_text = ""
 
-            master.execute(slave=1, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=9,
-                           output_value=2, data_format='>H')
-            self.input_str = user_input
-            return user_input
+            try:
+                result = master.execute(slave=1, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=8,
+                                        output_value=2)
+
+                cmd_return_text = "Write operation successful. Returned result: {}\n".format(result)
+            except Exception as e:
+                cmd_return_text = "Error: {}\n".format(e)
+
+            input_text = "Your cmd " + user_input + " has been processed! \n"
+
+            return input_text + cmd_return_text
 
     def run(self):
         self.app.run(debug=True)
