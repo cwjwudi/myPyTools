@@ -18,6 +18,8 @@ import yaml
 import cv2
 import numpy as np
 from array import array
+import mmap
+import base64
 
 
 def get_img(ix: int) -> None:
@@ -87,9 +89,19 @@ if __name__ == "__main__":
 
     # 读取modbus的reconnectCmd标志
     interval = 1  # 设置循环时间
+
+    with open("shared_memory.bin", "r+b") as f:
+        mm = mmap.mmap(f.fileno(), 0)
+
     while True:
         data = print_modbus.server_databank.get_values(block_name='0', address=8, size=1)
         globalData.stop_print_machine = data[0]  # reconnectCmd
+
+
+        # 写入数据到共享内存
+        img_base64 = base64.b64encode(globalData.img_list[0])
+        save_image_to_shared_memory(img_base64, 1024000)  # 1mb
+
         time.sleep(interval)
 
         if globalData.stop_print_machine == 2:

@@ -7,7 +7,8 @@
 """
 
 import threading
-
+import mmap
+import base64
 
 def num2register(num):  # 一个数字转换为modbustcp中的两个寄存器[低16位，高16位]
     return [num & 65535, (num >> 16) & 65535]
@@ -31,3 +32,13 @@ def stop_thread(thread: threading.Thread, event: threading.Event):
     if thread.is_alive():
         event.clear()
         thread.join()
+
+
+def save_image_to_shared_memory(image_data, shared_memory_size):
+    # with open(image_path, 'rb') as image_file:
+    #     image_data = image_file.read()
+
+    encoded_image = base64.b64encode(image_data)
+
+    with mmap.mmap(-1, shared_memory_size, tagname="shared_image") as shared_image:
+        shared_image.write(encoded_image)

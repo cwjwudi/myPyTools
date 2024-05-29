@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 import modbus_tk.defines as cst
 from modbus_tk import modbus_tcp, hooks
+import mmap
 
 
 class WebApp:
@@ -39,8 +40,10 @@ class WebApp:
                 image_base64 = f.read()
             # from base64Pic import pic
             # image_base64 = pic
+            with open("shared_memory.bin", "r+b") as f:
+                mm = mmap.mmap(f.fileno(), 0)
 
-            return render_template('view_img.html', image_base64=image_base64)
+            return render_template('view_img.html', image_base64=mm)
 
 
     def run(self):
