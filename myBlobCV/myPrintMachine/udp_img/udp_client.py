@@ -8,6 +8,8 @@ class ImageSender:
     def __init__(self, server_ip='127.0.0.1', server_port=9999):
         self.server_address = (server_ip, server_port)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        # 设置超时时间为3秒
+        self.socket.settimeout(3)
 
     def send_image(self, img):
         img_encode = cv2.imencode('.jpg', img)[1]
@@ -24,7 +26,11 @@ class ImageSender:
             else:
                 self.socket.sendto(data[1024 * i:1024 * (i + 1)], self.server_address)
 
-        response = self.socket.recv(1024).decode('utf-8')
+        try:
+            response = self.socket.recv(1024).decode('utf-8')
+        except socket.timeout:
+            response = 'timeout'
+
         return response
 
     def close(self):

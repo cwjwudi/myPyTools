@@ -9,6 +9,7 @@
 import threading
 import mmap
 import base64
+import cv2
 
 def num2register(num):  # 一个数字转换为modbustcp中的两个寄存器[低16位，高16位]
     return [num & 65535, (num >> 16) & 65535]
@@ -16,6 +17,13 @@ def num2register(num):  # 一个数字转换为modbustcp中的两个寄存器[�
 
 def register2num(register0, register1):  # modbustcp中的两个寄存器转换为一个数字[低16位，高16位]
     return register0 + (register1 << 16)
+
+
+def image_to_base64(image_np):
+    image = cv2.imencode('.jpg', image_np)[1]
+    image_code = str(base64.b64encode(image))[2:-1]
+
+    return image_code
 
 
 def run_in_thread(func):

@@ -1,7 +1,17 @@
+import threading
+
 from flask import Flask, render_template, request
+
+
 import modbus_tk.defines as cst
 from modbus_tk import modbus_tcp, hooks
-import mmap
+
+import numpy as np
+import time
+import base64
+
+from utility import *
+from udp_img.udp_server import ImageReceiver
 
 
 class WebApp:
@@ -36,21 +46,41 @@ class WebApp:
 
         @self.app.route('/view_img', methods=['GET'])
         def view_customers():
-            with open("image_base64.txt", "r") as f:
-                image_base64 = f.read()
-            # from base64Pic import pic
-            # image_base64 = pic
-            with open("shared_memory.bin", "r+b") as f:
-                mm = mmap.mmap(f.fileno(), 0)
-
-            return render_template('view_img.html', image_base64=mm)
+            global img_base64
+            return render_template('view_img.html', image_base64=img_base64)
 
 
     def run(self):
-        self.app.run(debug=True)
+        self.app.run(debug=False)
+
+
+def run_udp_receiver(ix: int):
+    global img_base64
+    receiver = ImageReceiver(server_port=9999)
+    interval = 1  # 设置循环时间
+    while True:
+        start_time = time.time()
+
+        img = receiver.receive_image()
+
+        img_base64 = base64.b64encode(img).decode()
+        task_time = time.time() - start_time
+        wait_time = interval - task_time
+
+        # if wait_time > 0:
+        #     time.sleep(wait_time)
+
+    #receiver.close()
 
 
 if __name__ == '__main__':
+    height, width, channels = 800, 2048, 3
+    img_list = [np.zeros((height, width, channels), dtype=np.uint8),
+                np.zeros((height, width, channels), dtype=np.uint8)]
+
+    img_base64 = None
+    t = threading.Thread(target=run_udp_receiver, args=(0,))
+    t.start()
     web_app = WebApp()
 
     master = modbus_tcp.TcpMaster(host="127.0.0.1", port=502, timeout_in_sec=5.0)

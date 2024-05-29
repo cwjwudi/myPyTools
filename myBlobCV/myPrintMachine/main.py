@@ -73,9 +73,10 @@ def run(ix: int):
         if wait_time > 0:
             time.sleep(wait_time)
 
+
 @run_in_thread
 def run_udp_sender(ix: int):
-    sender = ImageSender()
+    sender = ImageSender(server_port=9999)
     interval = 1  # 设置循环时间
     while True:
         start_time = time.time()
@@ -88,7 +89,6 @@ def run_udp_sender(ix: int):
         wait_time = interval - task_time
 
         if globalData.stop_print_machine == 2:
-            # print("try to break！")
             break
 
         if wait_time > 0:
