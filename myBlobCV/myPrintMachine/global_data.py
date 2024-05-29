@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import yaml
-
+import numpy as np
 
 class GlobalData:
     def __init__(self, yaml_path: str):
@@ -13,6 +13,13 @@ class GlobalData:
         self.initGlobalData(yaml_path)
 
         self.stop_print_machine = False
+        # 创建一个固定尺寸的全零图像
+        height, width, channels = 800, 2048, 3
+        self.img_list = [np.zeros((height, width, channels), dtype=np.uint8),
+                         np.zeros((height, width, channels), dtype=np.uint8)]
+
+
+
 
     def initGlobalData(self, yaml_path: str) -> None:
         # 加载并读取 YAML 文件

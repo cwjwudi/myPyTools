@@ -20,10 +20,8 @@ import numpy as np
 from array import array
 
 
-def get_img():
-    # TODO 此处img的获取需要更改为相应的等待相机获取的函数
-    img = cv2.imdecode(np.fromfile("mypic/Image__2024-04-24__ExposTime50ms.jpg", dtype=np.uint8), 1)
-    return img
+def get_img(ix: int) -> None:
+    globalData.img_list[ix] = cv2.imdecode(np.fromfile("mypic/Image__2024-04-24__ExposTime50ms.jpg", dtype=np.uint8), 1)
 
 
 def get_para(ix: int):
@@ -36,9 +34,9 @@ def get_para(ix: int):
 
 
 def pre_detect(ix: int):
-    img = get_img()
+    get_img(ix=ix)
     para = get_para(ix=ix)
-    return img, para
+    return para
 
 
 def post_detect(result_pos, ix: int):
@@ -51,23 +49,22 @@ def run(ix: int):
     mark_detector = MarkDetect(config_path)
     interval = 0.1  # 设置循环时间
 
-    # TODO 死循环是否合适，应该加入合适的线程销毁机制
     while True:
         start_time = time.time()
 
         # 获取图片，从modbus的4X参数区读取参数
-        img, para = pre_detect(ix=ix)
+        para = pre_detect(ix=ix)
         # 将modbus获取的参数更新到mark_detector中
         mark_detector.update_para(para=para)
         # 将图片输入到mark_detector中，获取坐标
-        detection_success, result_pos = mark_detector.mark_detect(img=img)
+        detection_success, result_pos = mark_detector.mark_detect(img=globalData.img_list[ix])
         # 将mark_detector获取的数据存储到modbus的3X数据区
         post_detect(result_pos=result_pos, ix=ix)
 
         task_time = time.time() - start_time
 
         wait_time = interval - task_time
-        # print("ix={}, wait_time={:.2f}ms".format(ix, wait_time * 1000))
+        print("ix={}, wait_time={:.2f}ms".format(ix, wait_time * 1000))
 
         if globalData.stop_print_machine == 2:
             # print("try to break！")
@@ -98,7 +95,6 @@ if __name__ == "__main__":
         if globalData.stop_print_machine == 2:
             break
 
-    # TODO 相应的线程销毁，有没有更合适的方式
     if globalData.stop_print_machine:
         print("start stop thread！")
         stop_thread(camera_thread_ix0, camera_event_ix0)
