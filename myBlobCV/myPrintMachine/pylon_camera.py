@@ -5,15 +5,18 @@ from pypylon import genicam
 
 import cv2
 
+from global_data import CameraSetting
+
 
 class ImageAcquistionAndDetect:
-    def __init__(self, camera_run_type: int):
+    def __init__(self, setting: CameraSetting):
         self.cameras = []
         self.converter = []
         self.IpList = []
-        self.camera_run_type = camera_run_type # 0：硬触发运行，1：自由运
-        self.exposure_time = 5000
-
+        self.camera_run_type = setting.camera_run_type # 0：硬触发运行，1：自由运
+        self.exposure_time = setting.exposure_time
+        self.resolution_X = setting.resolution_X
+        self.resolution_Y = setting.resolution_Y
         self.camera_init()
 
 
@@ -57,8 +60,8 @@ class ImageAcquistionAndDetect:
 
         # AOI设置
         if camera.Width.GetValue() > 1500:  # 大相机
-            camera.Width.SetValue(2048)
-            camera.Height.SetValue(800)
+            camera.Width.SetValue(self.resolution_X)
+            camera.Height.SetValue(self.resolution_Y)
             camera.OffsetX.SetValue(0)
             camera.OffsetY.SetValue(300)
 
@@ -97,13 +100,21 @@ class ImageAcquistionAndDetect:
 
 
 if __name__ == "__main__":
-    imageAcquistion = ImageAcquistionAndDetect(camera_run_type=1)
+
+    from global_data import GlobalData
+
+    config_path = 'config.yaml'
+    global_settings = GlobalData(config_path)
+
+    imageAcquistion = ImageAcquistionAndDetect(global_settings.camera_setting)
 
     while True:
         img_decode = imageAcquistion.get_RGB_img(ix=0)
 
         cv2.imshow('Received Image', img_decode)
-        cv2.waitKey(0)
+        key = cv2.waitKey(0)
 
         cv2.destroyAllWindows()
+        if key == 27:  # Check if ESC key is pressed
+            break
 

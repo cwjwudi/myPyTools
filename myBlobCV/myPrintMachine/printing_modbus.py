@@ -10,15 +10,15 @@ import modbus_tk.defines as cst
 from modbus_tk import modbus_tcp
 import time
 import numpy as np
-import yaml
 
+from global_data import ModbusSetting
 from utility import *
 
 
 class PaintMachineModbusServer:
-    def __init__(self, ipStr: str):
+    def __init__(self, setting: ModbusSetting):
         self.tcp_server = None
-        self.server_databank = self.modbusInit(ipStr)
+        self.server_databank = self.modbusInit(setting.ip_str)
 
     def modbusInit(self, ipStr: str):
         """
@@ -201,8 +201,12 @@ class PaintMachineModbusServer:
 
 
 if __name__ == "__main__":
-    ipStr = "127.0.0.1"
-    print_modbus = PaintMachineModbusServer(ipStr)
+    from global_data import GlobalData
+
+    config_path = 'config.yaml'
+    global_settings = GlobalData(config_path)
+
+    print_modbus = PaintMachineModbusServer(global_settings.modbus_setting)
 
     # 测试用数据
     result_pos = [

@@ -120,8 +120,8 @@ if __name__ == "__main__":
 
     globalData = GlobalData(config_path)
     # modbus会启动一个线程作为server，处理相应请求
-    print_modbus = PaintMachineModbusServer(ipStr=globalData.ip_str)
-    image_acquistion = ImageAcquistionAndDetect(camera_run_type=1)
+    print_modbus = PaintMachineModbusServer(globalData.modbus_setting)
+    image_acquistion = ImageAcquistionAndDetect(globalData.camera_setting)
 
     # 2个相机，分2个线程获取相应数据
     camera_thread_ix0, camera_event_ix0 = run(ix=0)
@@ -145,6 +145,7 @@ if __name__ == "__main__":
         stop_thread(camera_thread_ix0, camera_event_ix0)
         stop_thread(camera_thread_ix1, camera_event_ix1)
         # stop_thread(udp_thread_ix0, udp_event_ix0)
+        stop_thread(show_image_thread_ix0, show_image_event_ix0)
         print_modbus.tcp_server.stop()
 
     print("main thread over")

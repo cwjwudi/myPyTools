@@ -68,25 +68,24 @@ class MarkDetect:
             data = yaml.safe_load(file)
 
         ### 设置初始状态下的长度范围，对应像素宽的物理宽
-        self.field_of_view_X_mm = data['field_of_view_X_mm']  # 长度 落地
-        self.head_tail_distance_mm = data['head_tail_distance_mm']
-        self.resolution_X = data['resolution_X']
-        self.mark_num = data['mark_num']
-        # 菱形标+圆形标
-        self.mark_type = data['mark_type']  # 0：菱形标，1：圆形标
-
-        self.mark_width = data['blob']['mark_width']  # 菱形对角线 圆形直径
-        self.mark_height = data['blob']['mark_height']
-        self.rectangularity = data['blob']['rectangularity']  # PI/4 = 0.785
-        self.limit = data['blob']['limit']  # [0.7, 1.2]，筛选面积和长宽的最大最小倍数范围
+        self.field_of_view_X_mm = data['camera_setting']['field_of_view_X_mm']  # 长度 落地
+        self.head_tail_distance_mm = data['camera_setting']['head_tail_distance_mm']
+        self.resolution_X = data['camera_setting']['resolution_X']
+        self.resolution_Y = data['camera_setting']['resolution_Y']
 
         # 检测算法相关参数
-        self.scaling = data['blob']['scaling']  # 3，先缩小3倍粗检测，时间花费和精度都比较合适
-        self.blur_kernel = data['blob']['blur_kernel']  # 9，处理之前高斯滤波窗口大小，9比较合适
-        self.adaptive_block = data['blob']['adaptive_block']  # 67，自适应二值化的窗口大小，对于目前测试的大小矩形标和三角标都较为合适
-        self.C = data['blob']['C']  # 12，自适应二值化的阈值偏差, 光亮直接相关！！！！！
-        self.C1 = data['blob']['C1']
-        self.C2 = data['blob']['C2']
+        self.mark_num = data['blob_setting']['mark_num']
+        self.mark_type = data['blob_setting']['mark_type']  # 0：菱形标，1：圆形标
+        self.mark_width = data['blob_setting']['mark_width']  # 菱形对角线 圆形直径
+        self.mark_height = data['blob_setting']['mark_height']
+        self.rectangularity = data['blob_setting']['rectangularity']  # PI/4 = 0.785
+        self.limit = data['blob_setting']['limit']  # [0.7, 1.2]，筛选面积和长宽的最大最小倍数范围
+        self.scaling = data['blob_setting']['scaling']  # 3，先缩小3倍粗检测，时间花费和精度都比较合适
+        self.blur_kernel = data['blob_setting']['blur_kernel']  # 9，处理之前高斯滤波窗口大小，9比较合适
+        self.adaptive_block = data['blob_setting']['adaptive_block']  # 67，自适应二值化的窗口大小，对于目前测试的大小矩形标和三角标都较为合适
+        self.C = data['blob_setting']['C']  # 12，自适应二值化的阈值偏差, 光亮直接相关！！！！！
+        self.C1 = data['blob_setting']['C1']
+        self.C2 = data['blob_setting']['C2']
 
     def update_para(self, para: array) -> None:
         self.head_tail_distance_mm = para[0]
