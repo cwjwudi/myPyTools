@@ -1,7 +1,11 @@
 
+#
+ip_str: 127.0.0.1
 
 
 # 常规参数
+camera_run_type: 1 # 0：硬触发运行，1：自由运行
+exposure_time: 5000
 field_of_view_X_mm: 50  #长度 落地
 head_tail_distance_mm: 14
 resolution_X: 2048

@@ -10,7 +10,8 @@ class GlobalData:
         self.resolution_X = None
         self.head_tail_distance_mm = None
         self.field_of_view_X_mm = None
-        self.initGlobalData(yaml_path)
+
+        self.ip_str = ""
 
         self.stop_print_machine = False
         # 创建一个固定尺寸的全零图像
@@ -18,6 +19,7 @@ class GlobalData:
         self.img_list = [np.zeros((height, width, channels), dtype=np.uint8),
                          np.zeros((height, width, channels), dtype=np.uint8)]
 
+        self.initGlobalData(yaml_path)
 
 
 
@@ -33,3 +35,6 @@ class GlobalData:
 
         self.C1 = data['blob']['C1']
         self.C2 = data['blob']['C2']
+
+        self.ip_str = data['ip_str']
+

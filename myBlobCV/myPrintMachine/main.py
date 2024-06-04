@@ -104,13 +104,15 @@ def run_udp_sender(ix: int):
 
 @run_in_thread
 def run_show_image(ix: int):
-
+    scaling = 3
     while True:
         winname = 'Image IX:' + str(ix)
-        cv2.imshow(winname=winname, mat=globalData.img_list[ix])
-        cv2.waitKey(0)
-
+        img = globalData.img_list[ix][0:-1:scaling, 0:-1:scaling, :]
+        cv2.imshow(winname=winname, mat=img)
+        key = cv2.waitKey(0)
         cv2.destroyAllWindows()
+        if key == 27:  # Check if ESC key is pressed
+            break
 
 
 if __name__ == "__main__":
@@ -118,14 +120,14 @@ if __name__ == "__main__":
 
     globalData = GlobalData(config_path)
     # modbus会启动一个线程作为server，处理相应请求
-    print_modbus = PaintMachineModbusServer(ipStr="127.0.0.1")
+    print_modbus = PaintMachineModbusServer(ipStr=globalData.ip_str)
     image_acquistion = ImageAcquistionAndDetect(camera_run_type=1)
 
     # 2个相机，分2个线程获取相应数据
     camera_thread_ix0, camera_event_ix0 = run(ix=0)
     camera_thread_ix1, camera_event_ix1 = run(ix=1)
     # udp_thread_ix0, udp_event_ix0 = run_udp_sender(ix=0)
-    run_show_image(ix=0)
+    show_image_thread_ix0, show_image_event_ix0 = run_show_image(ix=0)
 
     # 读取modbus的reconnectCmd标志
     interval = 1  # 设置循环时间
