@@ -102,6 +102,17 @@ def run_udp_sender(ix: int):
     sender.close()
 
 
+@run_in_thread
+def run_show_image(ix: int):
+
+    while True:
+        winname = 'Image IX:' + str(ix)
+        cv2.imshow(winname=winname, mat=globalData.img_list[ix])
+        cv2.waitKey(0)
+
+        cv2.destroyAllWindows()
+
+
 if __name__ == "__main__":
     config_path = 'config.yaml'
 
@@ -114,6 +125,7 @@ if __name__ == "__main__":
     camera_thread_ix0, camera_event_ix0 = run(ix=0)
     camera_thread_ix1, camera_event_ix1 = run(ix=1)
     # udp_thread_ix0, udp_event_ix0 = run_udp_sender(ix=0)
+    run_show_image(ix=0)
 
     # 读取modbus的reconnectCmd标志
     interval = 1  # 设置循环时间

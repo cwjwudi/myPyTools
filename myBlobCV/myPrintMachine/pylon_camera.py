@@ -20,6 +20,7 @@ class ImageAcquistionAndDetect:
 
     def camera_init(self):
         tl_factory = pylon.TlFactory.GetInstance()  #遍历相机
+        print("waiting for camera connecting...")
         for ix, dev_info in enumerate(tl_factory.EnumerateDevices()):
             if not dev_info.GetDeviceClass() == 'BaslerGigE': continue
             cam_info = dev_info
