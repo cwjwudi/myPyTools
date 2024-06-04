@@ -10,6 +10,7 @@ from printing_blob import MarkDetect
 from printing_modbus import PaintMachineModbusServer
 from global_data import GlobalData
 from udp_img.udp_client import ImageSender
+from pylon_camera import ImageAcquistionAndDetect
 from utility import *
 
 import threading
@@ -21,7 +22,12 @@ from array import array
 
 
 def get_img(ix: int) -> None:
-    globalData.img_list[ix] = cv2.imdecode(np.fromfile("mypic/Image__2024-04-24__ExposTime50ms.jpg", dtype=np.uint8), 1)
+    # globalData.img_list[ix] = cv2.imdecode(np.fromfile("mypic/Image__2024-04-24__ExposTime50ms.jpg", dtype=np.uint8), 1)
+    try:
+        globalData.img_list[ix] = image_acquistion.get_RGB_img(ix=ix)
+    except:
+        globalData.img_list[ix] = cv2.imdecode(
+            np.fromfile("mypic/Image__2024-04-24__ExposTime50ms.jpg", dtype=np.uint8), 1)
 
 
 def get_para(ix: int):
@@ -102,11 +108,12 @@ if __name__ == "__main__":
     globalData = GlobalData(config_path)
     # modbus会启动一个线程作为server，处理相应请求
     print_modbus = PaintMachineModbusServer(ipStr="127.0.0.1")
+    image_acquistion = ImageAcquistionAndDetect(camera_run_type=1)
 
     # 2个相机，分2个线程获取相应数据
     camera_thread_ix0, camera_event_ix0 = run(ix=0)
     camera_thread_ix1, camera_event_ix1 = run(ix=1)
-    udp_thread_ix0, udp_event_ix0 = run_udp_sender(ix=0)
+    # udp_thread_ix0, udp_event_ix0 = run_udp_sender(ix=0)
 
     # 读取modbus的reconnectCmd标志
     interval = 1  # 设置循环时间
@@ -123,7 +130,7 @@ if __name__ == "__main__":
         print("start stop thread！")
         stop_thread(camera_thread_ix0, camera_event_ix0)
         stop_thread(camera_thread_ix1, camera_event_ix1)
-        stop_thread(udp_thread_ix0, udp_event_ix0)
+        # stop_thread(udp_thread_ix0, udp_event_ix0)
         print_modbus.tcp_server.stop()
 
     print("main thread over")
