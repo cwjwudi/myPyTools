@@ -26,8 +26,9 @@ def get_img(ix: int) -> None:
     try:
         globalData.img_list[ix] = image_acquistion.get_RGB_img(ix=ix)
     except:
-        globalData.img_list[ix] = cv2.imdecode(
-            np.fromfile("mypic/Image__2024-04-24__ExposTime50ms.jpg", dtype=np.uint8), 1)
+        pass
+        # globalData.img_list[ix] = cv2.imdecode(
+        #     np.fromfile("mypic/Image__2024-04-24__ExposTime50ms.jpg", dtype=np.uint8), 1)
 
 
 def get_para(ix: int):
@@ -70,7 +71,7 @@ def run(ix: int):
         task_time = time.time() - start_time
 
         wait_time = interval - task_time
-        # print("ix={}, wait_time={:.2f}ms".format(ix, wait_time * 1000))
+        print("ix={}, wait_time={:.2f}ms, detection_success={}".format(ix, wait_time * 1000, detection_success))
 
         if globalData.stop_print_machine == 2:
             # print("try to break！")
