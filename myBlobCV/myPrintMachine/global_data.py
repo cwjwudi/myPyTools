@@ -15,6 +15,7 @@ class GlobalData:
 
         # set modbus para
         self.modbus_setting.ip_str = data['modbus_setting']['ip_str']
+        self.modbus_setting.port = data['modbus_setting']['port']
 
         # set camera para
         self.camera_setting.camera_run_type = data['camera_setting']['camera_run_type']
@@ -47,6 +48,7 @@ class GlobalData:
 
 class ModbusSetting:
     ip_str: str
+    port: int
 
 
 class CameraSetting:

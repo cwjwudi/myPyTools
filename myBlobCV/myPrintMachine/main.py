@@ -3,7 +3,7 @@
 文件描述：主程序
 作者：Wenjie Cui
 创建日期：2024.5.28
-最后修改日期：2024.5.28
+最后修改日期：2024.6.4
 """
 
 from printing_blob import MarkDetect
@@ -111,7 +111,12 @@ def run_show_image(ix: int):
         cv2.imshow(winname=winname, mat=img)
         key = cv2.waitKey(0)
         cv2.destroyAllWindows()
+
+        if globalData.stop_print_machine == 2:
+            break
+
         if key == 27:  # Check if ESC key is pressed
+            globalData.stop_print_machine = 2
             break
 
 

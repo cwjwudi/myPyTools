@@ -29,7 +29,7 @@ class MainWindow(QMainWindow):
 
         self.ui.pushButton.clicked.connect(self.handle_click)
 
-        self.ui.chooseFloderButton.clicked.connect(self.handle_chooseFloderButton_click)
+        self.ui.chooseFloderButton.clicked.connect(self.handle_chooseFloderButton_click)  # function不要带括号！！！
 
         self.ui.decideCalcButton.clicked.connect(self.handle_decideCalcButton_click)
 

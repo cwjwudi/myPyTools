@@ -18,9 +18,10 @@ from utility import *
 class PaintMachineModbusServer:
     def __init__(self, setting: ModbusSetting):
         self.tcp_server = None
-        self.server_databank = self.modbusInit(setting.ip_str)
+        self.setting = setting
+        self.server_databank = self.modbusInit()
 
-    def modbusInit(self, ipStr: str):
+    def modbusInit(self):
         """
         可使用的函数:
         创建从站: server.add_slave(slave_id)
@@ -40,7 +41,7 @@ class PaintMachineModbusServer:
             size(int):要获取的值的数量
         """
         # 创建从站总服务器
-        self.tcp_server = modbus_tcp.TcpServer(address=ipStr)  # address必须设置,port默认为502
+        self.tcp_server = modbus_tcp.TcpServer(address=self.setting.ip_str, port=self.setting.port)  # address必须设置,port默认为502
         self.tcp_server.start()
         # 创建从站
         slave_1 = self.tcp_server.add_slave(1)  # slave_id = 1
