@@ -54,6 +54,13 @@ class MainWindow(QMainWindow):
     def update_status_table(self, status_dict):
         self.updateTable(self.ui.statusTable, status_dict)
 
+    def update_assignee_table(self, assignee_dict):
+        self.updateTable(self.ui.assigneeWG2Table, assignee_dict)
+        self.updateTable(self.ui.assigneeWG3Table, assignee_dict)
+
+    def update_product_group_table(self, product_group_dict):
+        self.updateTable(self.ui.productGroupTable, product_group_dict)
+
     def updateTable(self, table: QTableWidget, inputDict: dict):
 
         row_index = 0
@@ -67,11 +74,6 @@ class MainWindow(QMainWindow):
                 self.set_cell_value(row_index, col_index, str(inputDict[column_name]), table)
             else:
                 self.set_cell_value(row_index, col_index, str(0), table)
-
-    def update_assignee_table(self, assignee_dict):
-        self.updateTable(self.ui.assigneeWG2Table, assignee_dict)
-        self.updateTable(self.ui.assigneeWG3Table, assignee_dict)
-
 
     def handle_chooseFloderButton_click(self):
 
@@ -88,9 +90,10 @@ class MainWindow(QMainWindow):
         def innerFunc(directory):
             # 运行处理目录的函数
             my_signal.decideCalc.emit(directory)
-            status_dict, assignee_dict = analyStatus(directory)
+            status_dict, assignee_dict, product_group_dict = analyStatus(directory)
             self.update_status_table(status_dict)
             self.update_assignee_table(assignee_dict)
+            self.update_product_group_table(product_group_dict)
 
 
         # args中，如果没有这个逗号，Python 会将字符串中的每个字符都当作一个单独的参数

@@ -18,8 +18,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QHBoxLayout, QHeaderView,
     QLabel, QMainWindow, QMenuBar, QProgressBar,
     QPushButton, QSizePolicy, QSpacerItem, QSpinBox,
-    QSplitter, QStatusBar, QTabWidget, QTableWidget,
-    QTableWidgetItem, QVBoxLayout, QWidget)
+    QStatusBar, QTabWidget, QTableWidget, QTableWidgetItem,
+    QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -36,62 +36,50 @@ class Ui_MainWindow(object):
         self.tab.setObjectName(u"tab")
         self.verticalLayout = QVBoxLayout(self.tab)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalSpacer_3 = QSpacerItem(20, 41, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.verticalLayout.addItem(self.verticalSpacer_3)
-
-        self.horizontalLayout_9 = QHBoxLayout()
-        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
-        self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_9.addItem(self.horizontalSpacer_9)
-
-        self.splitter = QSplitter(self.tab)
-        self.splitter.setObjectName(u"splitter")
-        self.splitter.setOrientation(Qt.Horizontal)
-        self.chooseFloderButton = QPushButton(self.splitter)
+        self.horizontalLayout_6 = QHBoxLayout()
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.chooseFloderButton = QPushButton(self.tab)
         self.chooseFloderButton.setObjectName(u"chooseFloderButton")
-        self.splitter.addWidget(self.chooseFloderButton)
 
-        self.horizontalLayout_9.addWidget(self.splitter)
+        self.horizontalLayout_6.addWidget(self.chooseFloderButton)
 
         self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.horizontalLayout_9.addItem(self.horizontalSpacer_10)
+        self.horizontalLayout_6.addItem(self.horizontalSpacer_10)
 
         self.decideCalcButton = QPushButton(self.tab)
         self.decideCalcButton.setObjectName(u"decideCalcButton")
 
-        self.horizontalLayout_9.addWidget(self.decideCalcButton)
+        self.horizontalLayout_6.addWidget(self.decideCalcButton)
 
         self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.horizontalLayout_9.addItem(self.horizontalSpacer_11)
+        self.horizontalLayout_6.addItem(self.horizontalSpacer_11)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_9)
+        self.verticalLayout.addLayout(self.horizontalLayout_6)
 
-        self.horizontalLayout_4 = QHBoxLayout()
-        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.horizontalLayout_7 = QHBoxLayout()
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
         self.label_6 = QLabel(self.tab)
         self.label_6.setObjectName(u"label_6")
         font = QFont()
         font.setPointSize(10)
         self.label_6.setFont(font)
 
-        self.horizontalLayout_4.addWidget(self.label_6)
+        self.horizontalLayout_7.addWidget(self.label_6)
 
         self.directory = QLabel(self.tab)
         self.directory.setObjectName(u"directory")
 
-        self.horizontalLayout_4.addWidget(self.directory)
+        self.horizontalLayout_7.addWidget(self.directory)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_4)
+        self.verticalLayout.addLayout(self.horizontalLayout_7)
 
         self.statusTable = QTableWidget(self.tab)
-        if (self.statusTable.columnCount() < 4):
-            self.statusTable.setColumnCount(4)
+        if (self.statusTable.columnCount() < 5):
+            self.statusTable.setColumnCount(5)
         __qtablewidgetitem = QTableWidgetItem()
         self.statusTable.setHorizontalHeaderItem(0, __qtablewidgetitem)
         __qtablewidgetitem1 = QTableWidgetItem()
@@ -100,19 +88,46 @@ class Ui_MainWindow(object):
         self.statusTable.setHorizontalHeaderItem(2, __qtablewidgetitem2)
         __qtablewidgetitem3 = QTableWidgetItem()
         self.statusTable.setHorizontalHeaderItem(3, __qtablewidgetitem3)
+        __qtablewidgetitem4 = QTableWidgetItem()
+        self.statusTable.setHorizontalHeaderItem(4, __qtablewidgetitem4)
         if (self.statusTable.rowCount() < 1):
             self.statusTable.setRowCount(1)
-        __qtablewidgetitem4 = QTableWidgetItem()
-        self.statusTable.setVerticalHeaderItem(0, __qtablewidgetitem4)
+        __qtablewidgetitem5 = QTableWidgetItem()
+        self.statusTable.setVerticalHeaderItem(0, __qtablewidgetitem5)
         self.statusTable.setObjectName(u"statusTable")
 
         self.verticalLayout.addWidget(self.statusTable)
 
-        self.horizontalLayout_7 = QHBoxLayout()
-        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.productGroupTable = QTableWidget(self.tab)
+        if (self.productGroupTable.columnCount() < 7):
+            self.productGroupTable.setColumnCount(7)
+        __qtablewidgetitem6 = QTableWidgetItem()
+        self.productGroupTable.setHorizontalHeaderItem(0, __qtablewidgetitem6)
+        __qtablewidgetitem7 = QTableWidgetItem()
+        self.productGroupTable.setHorizontalHeaderItem(1, __qtablewidgetitem7)
+        __qtablewidgetitem8 = QTableWidgetItem()
+        self.productGroupTable.setHorizontalHeaderItem(2, __qtablewidgetitem8)
+        __qtablewidgetitem9 = QTableWidgetItem()
+        self.productGroupTable.setHorizontalHeaderItem(3, __qtablewidgetitem9)
+        __qtablewidgetitem10 = QTableWidgetItem()
+        self.productGroupTable.setHorizontalHeaderItem(4, __qtablewidgetitem10)
+        __qtablewidgetitem11 = QTableWidgetItem()
+        self.productGroupTable.setHorizontalHeaderItem(5, __qtablewidgetitem11)
+        __qtablewidgetitem12 = QTableWidgetItem()
+        self.productGroupTable.setHorizontalHeaderItem(6, __qtablewidgetitem12)
+        if (self.productGroupTable.rowCount() < 1):
+            self.productGroupTable.setRowCount(1)
+        __qtablewidgetitem13 = QTableWidgetItem()
+        self.productGroupTable.setVerticalHeaderItem(0, __qtablewidgetitem13)
+        self.productGroupTable.setObjectName(u"productGroupTable")
+
+        self.verticalLayout.addWidget(self.productGroupTable)
+
+        self.horizontalLayout_4 = QHBoxLayout()
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.horizontalSpacer_5 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.horizontalLayout_7.addItem(self.horizontalSpacer_5)
+        self.horizontalLayout_4.addItem(self.horizontalSpacer_5)
 
         self.label_4 = QLabel(self.tab)
         self.label_4.setObjectName(u"label_4")
@@ -120,32 +135,34 @@ class Ui_MainWindow(object):
         font1.setPointSize(12)
         self.label_4.setFont(font1)
 
-        self.horizontalLayout_7.addWidget(self.label_4)
+        self.horizontalLayout_4.addWidget(self.label_4)
 
         self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.horizontalLayout_7.addItem(self.horizontalSpacer_6)
+        self.horizontalLayout_4.addItem(self.horizontalSpacer_6)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_7)
+        self.verticalLayout.addLayout(self.horizontalLayout_4)
 
         self.assigneeWG2Table = QTableWidget(self.tab)
-        if (self.assigneeWG2Table.columnCount() < 5):
-            self.assigneeWG2Table.setColumnCount(5)
-        __qtablewidgetitem5 = QTableWidgetItem()
-        self.assigneeWG2Table.setHorizontalHeaderItem(0, __qtablewidgetitem5)
-        __qtablewidgetitem6 = QTableWidgetItem()
-        self.assigneeWG2Table.setHorizontalHeaderItem(1, __qtablewidgetitem6)
-        __qtablewidgetitem7 = QTableWidgetItem()
-        self.assigneeWG2Table.setHorizontalHeaderItem(2, __qtablewidgetitem7)
-        __qtablewidgetitem8 = QTableWidgetItem()
-        self.assigneeWG2Table.setHorizontalHeaderItem(3, __qtablewidgetitem8)
-        __qtablewidgetitem9 = QTableWidgetItem()
-        self.assigneeWG2Table.setHorizontalHeaderItem(4, __qtablewidgetitem9)
+        if (self.assigneeWG2Table.columnCount() < 6):
+            self.assigneeWG2Table.setColumnCount(6)
+        __qtablewidgetitem14 = QTableWidgetItem()
+        self.assigneeWG2Table.setHorizontalHeaderItem(0, __qtablewidgetitem14)
+        __qtablewidgetitem15 = QTableWidgetItem()
+        self.assigneeWG2Table.setHorizontalHeaderItem(1, __qtablewidgetitem15)
+        __qtablewidgetitem16 = QTableWidgetItem()
+        self.assigneeWG2Table.setHorizontalHeaderItem(2, __qtablewidgetitem16)
+        __qtablewidgetitem17 = QTableWidgetItem()
+        self.assigneeWG2Table.setHorizontalHeaderItem(3, __qtablewidgetitem17)
+        __qtablewidgetitem18 = QTableWidgetItem()
+        self.assigneeWG2Table.setHorizontalHeaderItem(4, __qtablewidgetitem18)
+        __qtablewidgetitem19 = QTableWidgetItem()
+        self.assigneeWG2Table.setHorizontalHeaderItem(5, __qtablewidgetitem19)
         if (self.assigneeWG2Table.rowCount() < 1):
             self.assigneeWG2Table.setRowCount(1)
-        __qtablewidgetitem10 = QTableWidgetItem()
-        self.assigneeWG2Table.setVerticalHeaderItem(0, __qtablewidgetitem10)
+        __qtablewidgetitem20 = QTableWidgetItem()
+        self.assigneeWG2Table.setVerticalHeaderItem(0, __qtablewidgetitem20)
         self.assigneeWG2Table.setObjectName(u"assigneeWG2Table")
 
         self.verticalLayout.addWidget(self.assigneeWG2Table)
@@ -170,29 +187,27 @@ class Ui_MainWindow(object):
         self.verticalLayout.addLayout(self.horizontalLayout_8)
 
         self.assigneeWG3Table = QTableWidget(self.tab)
-        if (self.assigneeWG3Table.columnCount() < 5):
-            self.assigneeWG3Table.setColumnCount(5)
-        __qtablewidgetitem11 = QTableWidgetItem()
-        self.assigneeWG3Table.setHorizontalHeaderItem(0, __qtablewidgetitem11)
-        __qtablewidgetitem12 = QTableWidgetItem()
-        self.assigneeWG3Table.setHorizontalHeaderItem(1, __qtablewidgetitem12)
-        __qtablewidgetitem13 = QTableWidgetItem()
-        self.assigneeWG3Table.setHorizontalHeaderItem(2, __qtablewidgetitem13)
-        __qtablewidgetitem14 = QTableWidgetItem()
-        self.assigneeWG3Table.setHorizontalHeaderItem(3, __qtablewidgetitem14)
-        __qtablewidgetitem15 = QTableWidgetItem()
-        self.assigneeWG3Table.setHorizontalHeaderItem(4, __qtablewidgetitem15)
+        if (self.assigneeWG3Table.columnCount() < 6):
+            self.assigneeWG3Table.setColumnCount(6)
+        __qtablewidgetitem21 = QTableWidgetItem()
+        self.assigneeWG3Table.setHorizontalHeaderItem(0, __qtablewidgetitem21)
+        __qtablewidgetitem22 = QTableWidgetItem()
+        self.assigneeWG3Table.setHorizontalHeaderItem(1, __qtablewidgetitem22)
+        __qtablewidgetitem23 = QTableWidgetItem()
+        self.assigneeWG3Table.setHorizontalHeaderItem(2, __qtablewidgetitem23)
+        __qtablewidgetitem24 = QTableWidgetItem()
+        self.assigneeWG3Table.setHorizontalHeaderItem(3, __qtablewidgetitem24)
+        __qtablewidgetitem25 = QTableWidgetItem()
+        self.assigneeWG3Table.setHorizontalHeaderItem(4, __qtablewidgetitem25)
+        __qtablewidgetitem26 = QTableWidgetItem()
+        self.assigneeWG3Table.setHorizontalHeaderItem(5, __qtablewidgetitem26)
         if (self.assigneeWG3Table.rowCount() < 1):
             self.assigneeWG3Table.setRowCount(1)
-        __qtablewidgetitem16 = QTableWidgetItem()
-        self.assigneeWG3Table.setVerticalHeaderItem(0, __qtablewidgetitem16)
+        __qtablewidgetitem27 = QTableWidgetItem()
+        self.assigneeWG3Table.setVerticalHeaderItem(0, __qtablewidgetitem27)
         self.assigneeWG3Table.setObjectName(u"assigneeWG3Table")
 
         self.verticalLayout.addWidget(self.assigneeWG3Table)
-
-        self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.verticalLayout.addItem(self.verticalSpacer_4)
 
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QWidget()
@@ -329,34 +344,56 @@ class Ui_MainWindow(object):
         ___qtablewidgetitem2.setText(QCoreApplication.translate("MainWindow", u"Closed", None));
         ___qtablewidgetitem3 = self.statusTable.horizontalHeaderItem(3)
         ___qtablewidgetitem3.setText(QCoreApplication.translate("MainWindow", u"Quality", None));
-        ___qtablewidgetitem4 = self.statusTable.verticalHeaderItem(0)
-        ___qtablewidgetitem4.setText(QCoreApplication.translate("MainWindow", u"\u6570\u91cf", None));
+        ___qtablewidgetitem4 = self.statusTable.horizontalHeaderItem(4)
+        ___qtablewidgetitem4.setText(QCoreApplication.translate("MainWindow", u"None", None));
+        ___qtablewidgetitem5 = self.statusTable.verticalHeaderItem(0)
+        ___qtablewidgetitem5.setText(QCoreApplication.translate("MainWindow", u"\u6570\u91cf", None));
+        ___qtablewidgetitem6 = self.productGroupTable.horizontalHeaderItem(0)
+        ___qtablewidgetitem6.setText(QCoreApplication.translate("MainWindow", u"Control", None));
+        ___qtablewidgetitem7 = self.productGroupTable.horizontalHeaderItem(1)
+        ___qtablewidgetitem7.setText(QCoreApplication.translate("MainWindow", u"Hardware", None));
+        ___qtablewidgetitem8 = self.productGroupTable.horizontalHeaderItem(2)
+        ___qtablewidgetitem8.setText(QCoreApplication.translate("MainWindow", u"Motion", None));
+        ___qtablewidgetitem9 = self.productGroupTable.horizontalHeaderItem(3)
+        ___qtablewidgetitem9.setText(QCoreApplication.translate("MainWindow", u"Visual", None));
+        ___qtablewidgetitem10 = self.productGroupTable.horizontalHeaderItem(4)
+        ___qtablewidgetitem10.setText(QCoreApplication.translate("MainWindow", u"software", None));
+        ___qtablewidgetitem11 = self.productGroupTable.horizontalHeaderItem(5)
+        ___qtablewidgetitem11.setText(QCoreApplication.translate("MainWindow", u"Other", None));
+        ___qtablewidgetitem12 = self.productGroupTable.horizontalHeaderItem(6)
+        ___qtablewidgetitem12.setText(QCoreApplication.translate("MainWindow", u"None", None));
+        ___qtablewidgetitem13 = self.productGroupTable.verticalHeaderItem(0)
+        ___qtablewidgetitem13.setText(QCoreApplication.translate("MainWindow", u"\u6570\u91cf", None));
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"WG2", None))
-        ___qtablewidgetitem5 = self.assigneeWG2Table.horizontalHeaderItem(0)
-        ___qtablewidgetitem5.setText(QCoreApplication.translate("MainWindow", u"Ma Ruiqi", None));
-        ___qtablewidgetitem6 = self.assigneeWG2Table.horizontalHeaderItem(1)
-        ___qtablewidgetitem6.setText(QCoreApplication.translate("MainWindow", u"Xu Zhihang", None));
-        ___qtablewidgetitem7 = self.assigneeWG2Table.horizontalHeaderItem(2)
-        ___qtablewidgetitem7.setText(QCoreApplication.translate("MainWindow", u"Ye Qinglong", None));
-        ___qtablewidgetitem8 = self.assigneeWG2Table.horizontalHeaderItem(3)
-        ___qtablewidgetitem8.setText(QCoreApplication.translate("MainWindow", u"Pan Junru", None));
-        ___qtablewidgetitem9 = self.assigneeWG2Table.horizontalHeaderItem(4)
-        ___qtablewidgetitem9.setText(QCoreApplication.translate("MainWindow", u"Deng Hougang", None));
-        ___qtablewidgetitem10 = self.assigneeWG2Table.verticalHeaderItem(0)
-        ___qtablewidgetitem10.setText(QCoreApplication.translate("MainWindow", u"\u6570\u91cf", None));
+        ___qtablewidgetitem14 = self.assigneeWG2Table.horizontalHeaderItem(0)
+        ___qtablewidgetitem14.setText(QCoreApplication.translate("MainWindow", u"Ma Ruiqi", None));
+        ___qtablewidgetitem15 = self.assigneeWG2Table.horizontalHeaderItem(1)
+        ___qtablewidgetitem15.setText(QCoreApplication.translate("MainWindow", u"Xu Zhihang", None));
+        ___qtablewidgetitem16 = self.assigneeWG2Table.horizontalHeaderItem(2)
+        ___qtablewidgetitem16.setText(QCoreApplication.translate("MainWindow", u"Ye Qinglong", None));
+        ___qtablewidgetitem17 = self.assigneeWG2Table.horizontalHeaderItem(3)
+        ___qtablewidgetitem17.setText(QCoreApplication.translate("MainWindow", u"Pan Junru", None));
+        ___qtablewidgetitem18 = self.assigneeWG2Table.horizontalHeaderItem(4)
+        ___qtablewidgetitem18.setText(QCoreApplication.translate("MainWindow", u"Deng Hougang", None));
+        ___qtablewidgetitem19 = self.assigneeWG2Table.horizontalHeaderItem(5)
+        ___qtablewidgetitem19.setText(QCoreApplication.translate("MainWindow", u"None", None));
+        ___qtablewidgetitem20 = self.assigneeWG2Table.verticalHeaderItem(0)
+        ___qtablewidgetitem20.setText(QCoreApplication.translate("MainWindow", u"\u6570\u91cf", None));
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"WG3", None))
-        ___qtablewidgetitem11 = self.assigneeWG3Table.horizontalHeaderItem(0)
-        ___qtablewidgetitem11.setText(QCoreApplication.translate("MainWindow", u"Cui Wenjie", None));
-        ___qtablewidgetitem12 = self.assigneeWG3Table.horizontalHeaderItem(1)
-        ___qtablewidgetitem12.setText(QCoreApplication.translate("MainWindow", u"Dai Juncheng", None));
-        ___qtablewidgetitem13 = self.assigneeWG3Table.horizontalHeaderItem(2)
-        ___qtablewidgetitem13.setText(QCoreApplication.translate("MainWindow", u"Jiang Peiyang", None));
-        ___qtablewidgetitem14 = self.assigneeWG3Table.horizontalHeaderItem(3)
-        ___qtablewidgetitem14.setText(QCoreApplication.translate("MainWindow", u"Zhou Shenyang", None));
-        ___qtablewidgetitem15 = self.assigneeWG3Table.horizontalHeaderItem(4)
-        ___qtablewidgetitem15.setText(QCoreApplication.translate("MainWindow", u"Jing Feng", None));
-        ___qtablewidgetitem16 = self.assigneeWG3Table.verticalHeaderItem(0)
-        ___qtablewidgetitem16.setText(QCoreApplication.translate("MainWindow", u"\u6570\u91cf", None));
+        ___qtablewidgetitem21 = self.assigneeWG3Table.horizontalHeaderItem(0)
+        ___qtablewidgetitem21.setText(QCoreApplication.translate("MainWindow", u"Cui Wenjie", None));
+        ___qtablewidgetitem22 = self.assigneeWG3Table.horizontalHeaderItem(1)
+        ___qtablewidgetitem22.setText(QCoreApplication.translate("MainWindow", u"Dai Juncheng", None));
+        ___qtablewidgetitem23 = self.assigneeWG3Table.horizontalHeaderItem(2)
+        ___qtablewidgetitem23.setText(QCoreApplication.translate("MainWindow", u"Jiang Peiyang", None));
+        ___qtablewidgetitem24 = self.assigneeWG3Table.horizontalHeaderItem(3)
+        ___qtablewidgetitem24.setText(QCoreApplication.translate("MainWindow", u"Zhou Shenyang", None));
+        ___qtablewidgetitem25 = self.assigneeWG3Table.horizontalHeaderItem(4)
+        ___qtablewidgetitem25.setText(QCoreApplication.translate("MainWindow", u"Jing Feng", None));
+        ___qtablewidgetitem26 = self.assigneeWG3Table.horizontalHeaderItem(5)
+        ___qtablewidgetitem26.setText(QCoreApplication.translate("MainWindow", u"None", None));
+        ___qtablewidgetitem27 = self.assigneeWG3Table.verticalHeaderItem(0)
+        ___qtablewidgetitem27.setText(QCoreApplication.translate("MainWindow", u"\u6570\u91cf", None));
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"\u8ba1\u7b97\u6570\u91cf", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"+", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"=", None))

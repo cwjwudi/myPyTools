@@ -26,43 +26,12 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <spacer name="verticalSpacer_3">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>41</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
-           <spacer name="horizontalSpacer_9">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+           <widget class="QPushButton" name="chooseFloderButton">
+            <property name="text">
+             <string>选择文件夹</string>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QSplitter" name="splitter">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <widget class="QPushButton" name="chooseFloderButton">
-             <property name="text">
-              <string>选择文件夹</string>
-             </property>
-            </widget>
            </widget>
           </item>
           <item>
@@ -101,7 +70,7 @@
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
           <item>
            <widget class="QLabel" name="label_6">
             <property name="font">
@@ -150,10 +119,59 @@
             <string>Quality</string>
            </property>
           </column>
+          <column>
+           <property name="text">
+            <string>None</string>
+           </property>
+          </column>
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <widget class="QTableWidget" name="productGroupTable">
+          <row>
+           <property name="text">
+            <string>数量</string>
+           </property>
+          </row>
+          <column>
+           <property name="text">
+            <string>Control</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Hardware</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Motion</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Visual</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>software</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Other</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>None</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
            <spacer name="horizontalSpacer_5">
             <property name="orientation">
@@ -224,6 +242,11 @@
           <column>
            <property name="text">
             <string>Deng Hougang</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>None</string>
            </property>
           </column>
          </widget>
@@ -302,20 +325,12 @@
             <string>Jing Feng</string>
            </property>
           </column>
+          <column>
+           <property name="text">
+            <string>None</string>
+           </property>
+          </column>
          </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer_4">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
         </item>
        </layout>
       </widget>

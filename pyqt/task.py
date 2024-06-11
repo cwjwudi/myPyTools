@@ -22,6 +22,7 @@ def has_separator_line(content):
 def analyStatus(root_path):
     status_dict = {}
     assignee_dict = {}
+    product_group_dict = {}
 
     data_path_list = getPath(root_path)
     # 读取文件夹下的所有文件
@@ -37,10 +38,24 @@ def analyStatus(root_path):
             try:
                 data = yaml.load(yaml_content, Loader=yaml.FullLoader)
                 status = data.get('Status', None)
-                assignee = data.get('Assign to person', 'None')  # 如果 'Assign to person' 为空，则默认为 'None'
+                assignee = data.get('Assign to person', None)  # 如果 'Assign to person' 为空，则默认为 'None'
+                product_group = data.get('Product Group', None)
+                # 统计状态
                 if status:
                     status_dict[status] = status_dict.get(status, 0) + 1
-                assignee_dict[assignee] = assignee_dict.get(assignee, 0) + 1  # 无论 'Assign to person' 是否为空，都进行统计
+                else:
+                    status_dict['None'] = status_dict.get('None', 0) + 1
+                # 统计分配的工程师
+                if assignee:
+                    assignee_dict[assignee] = assignee_dict.get(assignee, 0) + 1
+                else:
+                    assignee_dict['None'] = assignee_dict.get('None', 0) + 1
+                # 统计问题组
+                if product_group:
+                    product_group_dict[product_group] = product_group_dict.get(product_group, 0) + 1
+                else:
+                    product_group_dict['None'] = product_group_dict.get('None', 0) + 1
+
             except yaml.YAMLError as e:
                 print(f"Error in {filename}: {e}")
 
@@ -50,7 +65,7 @@ def analyStatus(root_path):
     # for assignee, count in assignee_dict.items():
     #     print(f"Assignee: {assignee}, Count: {count}")
 
-    return status_dict, assignee_dict
+    return status_dict, assignee_dict, product_group_dict
 
 def getPath(root_path):
     md_path_list: List[str] = []
