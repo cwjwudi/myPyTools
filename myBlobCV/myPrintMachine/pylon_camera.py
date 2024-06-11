@@ -4,6 +4,7 @@ from pypylon import pylon
 from pypylon import genicam
 
 import cv2
+import time
 
 from global_data import CameraSetting
 
@@ -24,7 +25,15 @@ class ImageAcquistionAndDetect:
     def camera_init(self):
         tl_factory = pylon.TlFactory.GetInstance()  #遍历相机
         print("waiting for camera connecting...")
-        for ix, dev_info in enumerate(tl_factory.EnumerateDevices()):
+        # 2024.6.11 增加等待相机连接段
+        devices = tl_factory.EnumerateDevices()
+
+        while len(devices) == 0:
+            # 每隔1s重新获取一次设备
+            time.sleep(1)
+            devices = tl_factory.EnumerateDevices()
+
+        for ix, dev_info in enumerate(devices):
             if not dev_info.GetDeviceClass() == 'BaslerGigE': continue
             cam_info = dev_info
             print(
