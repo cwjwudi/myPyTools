@@ -14,7 +14,9 @@ class ImageAcquistionAndDetect:
         self.cameras = []
         self.converter = []
         self.IpList = []
-        self.camera_run_type = setting.camera_run_type # 0：硬触发运行，1：自由运
+
+        self.camera_num = setting.camera_num
+        self.camera_run_type = setting.camera_run_type  # 0：硬触发运行，1：自由运
         self.exposure_time = setting.exposure_time
         self.resolution_X = setting.resolution_X
         self.resolution_Y = setting.resolution_Y
@@ -24,14 +26,22 @@ class ImageAcquistionAndDetect:
 
     def camera_init(self):
         tl_factory = pylon.TlFactory.GetInstance()  #遍历相机
-        print("waiting for camera connecting...")
+        print("Waiting for camera connecting...")
         # 2024.6.11 增加等待相机连接段
         devices = tl_factory.EnumerateDevices()
-
-        while len(devices) == 0:
+        need_devices_num = self.camera_num - len(devices)
+        while True:
+            if need_devices_num > 0:
+                print("Still need {} camera!".format(need_devices_num))
+            elif need_devices_num < 0:
+                print("Still need {} camera!".format(-need_devices_num))
+            else:
+                print("All camera standby!")
+                break
             # 每隔1s重新获取一次设备
             time.sleep(1)
             devices = tl_factory.EnumerateDevices()
+            need_devices_num = self.camera_num - len(devices)
 
         for ix, dev_info in enumerate(devices):
             if not dev_info.GetDeviceClass() == 'BaslerGigE': continue

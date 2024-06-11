@@ -130,8 +130,13 @@ if __name__ == "__main__":
     image_acquistion = ImageAcquistionAndDetect(globalData.camera_setting)
 
     # 2个相机，分2个线程获取相应数据
-    camera_thread_ix0, camera_event_ix0 = run(ix=0)
-    camera_thread_ix1, camera_event_ix1 = run(ix=1)
+    camera_thread_list = []
+    camera_event_list = []
+    for num in range(globalData.camera_setting.camera_num):
+        camera_thread_ix, camera_event_ix = run(ix=num)
+        camera_thread_list.append(camera_thread_ix)
+        camera_event_list.append(camera_event_ix)
+
     # udp_thread_ix0, udp_event_ix0 = run_udp_sender(ix=0)
     show_image_thread_ix0, show_image_event_ix0 = run_show_image(ix=0)
 
@@ -147,9 +152,11 @@ if __name__ == "__main__":
             break
 
     if globalData.stop_print_machine:
-        print("start stop thread！")
-        stop_thread(camera_thread_ix0, camera_event_ix0)
-        stop_thread(camera_thread_ix1, camera_event_ix1)
+        # print("start stop thread！")
+        for num in range(globalData.camera_setting.camera_num):
+            print("Stop camera {}!".format(num))
+            stop_thread(camera_thread_list[num], camera_event_list[num])
+
         # stop_thread(udp_thread_ix0, udp_event_ix0)
         stop_thread(show_image_thread_ix0, show_image_event_ix0)
         print_modbus.tcp_server.stop()

@@ -18,6 +18,7 @@ class GlobalData:
         self.modbus_setting.port = data['modbus_setting']['port']
 
         # set camera para
+        self.camera_setting.camera_num = data['camera_setting']['camera_num']
         self.camera_setting.camera_run_type = data['camera_setting']['camera_run_type']
         self.camera_setting.exposure_time = data['camera_setting']['exposure_time']
         self.camera_setting.field_of_view_X_mm = data['camera_setting']['field_of_view_X_mm']
@@ -52,6 +53,7 @@ class ModbusSetting:
 
 
 class CameraSetting:
+    camera_num: int
     camera_run_type: int
     exposure_time: int
     field_of_view_X_mm: int  # 长度 落地

@@ -7,6 +7,7 @@ modbus_setting:
 
 # 相机设置
 camera_setting:
+  camera_num: 1
   camera_run_type: 1 # 0：硬触发运行，1：自由运行
   exposure_time: 5000
   field_of_view_X_mm: 50  #长度 落地
