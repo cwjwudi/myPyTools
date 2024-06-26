@@ -9,7 +9,6 @@
 from printing_blob import MarkDetect
 from printing_modbus import PaintMachineModbusServer
 from global_data import GlobalData
-from udp_img.udp_client import ImageSender
 from pylon_camera import ImageAcquistionAndDetect
 from utility import *
 
