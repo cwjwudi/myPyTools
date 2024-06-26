@@ -82,28 +82,6 @@ def run(ix: int):
 
 
 @run_in_thread
-def run_udp_sender(ix: int):
-    sender = ImageSender(server_port=9999)
-    interval = 1  # 设置循环时间
-    while True:
-        start_time = time.time()
-
-        response = sender.send_image(globalData.img_list[ix])
-        print(response)
-        # sender.close()
-
-        task_time = time.time() - start_time
-        wait_time = interval - task_time
-
-        if globalData.stop_print_machine == 2:
-            break
-
-        if wait_time > 0:
-            time.sleep(wait_time)
-    sender.close()
-
-
-@run_in_thread
 def run_show_image(ix: int):
     scaling = 3
     while True:

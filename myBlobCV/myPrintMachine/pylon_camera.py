@@ -75,7 +75,7 @@ class ImageAcquistionAndDetect:
         camera.ExposureMode.SetValue("Timed")
         camera.ExposureTimeMode.SetValue("Standard")
         ### 设置曝光时间
-        camera.ExposureTimeAbs.SetValue(10000)
+        camera.ExposureTimeAbs.SetValue(self.exposure_time)
 
         # AOI设置
         if camera.Width.GetValue() > 1500:  # 大相机
