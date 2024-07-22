@@ -41,11 +41,11 @@ def cal_matrices(A,B,Q,R,F,N):
 
     Q_bar_be = np.kron(np.eye(N), Q)
     Q_bar = scipy.linalg.block_diag(Q_bar_be, F)
-    R_bar = np.kron(np.eye(N), R)
+    R_bar = np.kron(np.eye(N), R)   # W 对控制量的约束矩阵
 
     G = np.matmul(np.matmul(M.transpose(),Q_bar),M)
-    E = np.matmul(np.matmul(C.transpose(),Q_bar),M)
-    H = np.matmul(np.matmul(C.transpose(),Q_bar),C) + R_bar
+    E = np.matmul(np.matmul(C.transpose(),Q_bar),M)    # thetaT * Q * E
+    H = np.matmul(np.matmul(C.transpose(),Q_bar),C) + R_bar   # thetaT * Q * theta + W
 
     return H, E
 
