@@ -38,28 +38,16 @@ env = InvertedPendulumEnv(render_mode="human")
 # env = gym.make('InvertedPendulum-v4',  render_mode="human")
 # 环境初始化
 state = env.reset()
-
-
-# PID
-
-kp = 100
-ki = 0
-kd = 0.05
-dt = 1.0  # 时间间隔为 1 秒
-
-pid = PID(kp, ki, kd, env.dt)
-
-setpoint = 0  # 目标值
-measured_value = 0  # 初始测量值
+state = state[0]
 # 循环交互
 while True:
     # 渲染画面
     env.render()
     # 从动作空间随机获取一个动作
-    measured_value = state[1]
-    if not isinstance(measured_value, (int, float)):
-        measured_value = 0.0
-    action = pid.update(setpoint, measured_value)
+    pos = state[1]
+    vel = state[3]
+
+    action = 10*(pos - 0) + 0.1*vel
     action = np.array([action])
     # action = env.action_space.sample()
     # agent与环境进行一步交互
@@ -68,7 +56,7 @@ while True:
     # 判断当前episode 是否完成
     if done:
         print('done')
-        continue
+        break
     # time.sleep(1)
 # 环境结束
 env.close()
