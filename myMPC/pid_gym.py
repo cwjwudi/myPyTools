@@ -2,21 +2,20 @@ import gym
 import numpy as np
 import keyboard
 
-from env.InvertedPendulumEnv import InvertedPendulumEnv_Ctrl, InvertedPendulumEnv_Ctrl2
+from envs.InvertedPendulumEnv import InvertedPendulumEnv_Ctrl, InvertedPendulumEnv_Ctrl2
 
 
 
 if __name__ == "__main__":
     # 生成环境
-    env = InvertedPendulumEnv_Ctrl2(cfg="./env/config.yaml")
-    # env = InvertedPendulumEnv_Ctrl(render_mode="human")
+    env = InvertedPendulumEnv_Ctrl(render_mode="human")
 
     env.init_qpos = 0.2
     # 环境初始化
     state = env.reset()
-    # state = state[0]
+    state = state[0]
     # 设置完成时间，单位s
-    done_time = 10.0
+    done_time = 20.0
     total_time = 0.0
     # 循环交互
     while True:

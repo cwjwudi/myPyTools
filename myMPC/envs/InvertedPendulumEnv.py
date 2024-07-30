@@ -1,3 +1,6 @@
+from typing import Optional, Tuple
+
+from gym.core import ObsType
 from gym.envs.mujoco.inverted_pendulum_v4 import InvertedPendulumEnv
 import numpy as np
 import gym
@@ -37,31 +40,23 @@ class InvertedPendulumEnv_Ctrl2(gym.Env):
         self.model = mujoco.MjModel.from_xml_path(self.model)
         self.data = mujoco.MjData(self.model)
         if self.visual:
-            self.viewer = mujoco_viewer.MujocoViewer(self.model, self.data)
-
-        self.termination = False
-
-        # state buffer
-        self.state_buffer = []
-        self.buffer_size = self.config['env']['state_buffer_size']  # 3
+            render_resolution = self.config['system']['render_resolution']
+            self.viewer = mujoco_viewer.MujocoViewer(self.model, self.data, width=render_resolution[0], height=render_resolution[1])
+            self.viewer._render_every_frame = False     # 默认不加速显示
 
         # Observation space and State space
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(4,), dtype=np.float32)
         self.action_space = spaces.Box(low=np.array([-3] * 1), high=np.array([3] * 1))
-
-        # self.action_high = np.array([0.26, 0.39, 0.9, 0.55, 0.8, 0.26, 0.39, 0.9, 0.55, 0.8], dtype=np.float32)
-        # self.action_space = spaces.Box(-self.action_high, self.action_high, dtype=np.float32)
-
-        self.P = np.array(self.config['control']['P'])
-        self.D = np.array(self.config['control']['D'])
+        self.init_pos = self.config['init_state']['pos']
 
         self.simrate = self.config['control']['decimation']  # simulate X mujoco steps with same pd target. 50 brings simulation from 2000Hz to exactly 40Hz
         self.time = 0  # number of time steps in current episode
-
         self.time_limit = self.config['env']['time_limit']
 
     def step_simulation(self, action):
         self.data.ctrl[0] = action
+
+        mujoco.mj_step(self.model, self.data)
 
     def get_state(self):
         state = np.concatenate([self.data.qpos, self.data.qvel]).ravel()
@@ -76,9 +71,32 @@ class InvertedPendulumEnv_Ctrl2(gym.Env):
 
         obs = self.get_state()
 
-        # 保持身体高度
         if self.visual:
             self.render()
         reward = 1
         done = False
+        if np.abs(obs[1]) > 0.5 or self.time > self.time_limit:
+            done = True
         return obs, reward, done, {}
+
+    def reset(self, pos_offset):
+        qpos_init = np.array(self.init_pos)
+        qpos_init = qpos_init + np.array(pos_offset)
+        qvel_zero = np.array([0] * self.model.nv)
+        qacc_zero = np.array([0] * self.model.nv)
+
+        self.data.qpos = qpos_init
+        self.data.qvel = qvel_zero
+        self.data.qacc = qacc_zero
+        self.data.time = 0.0
+        mujoco.mj_forward(self.model, self.data)
+
+        self.time = 0
+
+        return self.get_state()
+
+    def render(self):
+        return self.viewer.render()
+
+    def close(self):
+        self.viewer.close()
