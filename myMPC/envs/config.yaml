@@ -10,16 +10,10 @@ system: # 机器人系统参数
     dir: ../log/Cassie/${now:%Y-%m-%d}/${now:%H-%M-%S}
   visual: True
   render_resolution: [1920, 1080]
-  dynamics_randomization: True
 
 env:
   num_envs: 16
   time_limit: 600  # 最大600个step
-
-commands:
-  lin_vel_x:        [0.4, 0.7]
-  lin_vel_y:        [0.0, 0.0]
-  ang_vel_yaw:      [-1.0, 1.0]
 
 init_state:
   pos: [0.0, 0.0]
@@ -33,11 +27,3 @@ control:
   # decimation: Number of control action updates @ sim DT per policy DT
   decimation: 1
 
-rewards:
-  omega: 0.5
-  scales:
-    ref:    0.1
-    spring: 0.1
-    ori:    0.1
-    vel:    0.1
-    termin: 0.1
