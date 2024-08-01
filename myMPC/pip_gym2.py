@@ -21,6 +21,7 @@ def PID_controller(state):
     return torque
 
 
+
 if __name__ == "__main__":
     # 生成环境
     env = InvertedPendulumEnv_Ctrl2(cfg="./envs/config.yaml")
