@@ -12,6 +12,15 @@ running = True  # 线程运行标志
 trajectory_x = []  # 记录轨迹的 x 坐标
 trajectory_y = []  # 记录轨迹的 y 坐标
 
+
+def brarea2pltarea(xbr, ybr, width):
+    xplt = xbr - width/2
+    yplt = 0
+    wplt = width
+    hplt = ybr
+    return xplt, yplt, wplt, hplt
+
+
 def update_position():
     """动态更新滑块位置的函数"""
     global x, y, running
@@ -33,7 +42,7 @@ def show_slider_animation():
     global x, y, running, trajectory_x, trajectory_y
     # 创建图形和轴
     fig, ax = plt.subplots()
-    ax.set_xlim(-10, 120)
+    ax.set_xlim(-10, 150)
     ax.set_ylim(-10, 50)
 
     # 创建一个正方形作为滑块
@@ -41,7 +50,24 @@ def show_slider_animation():
     ax.add_patch(slider_square)
 
     # 创建障碍物
-    obstacle = plt.Rectangle((0.5, 20), 2, 2, color='red')  # 障碍物位置和大小
+    xplt, yplt, wplt, hplt = brarea2pltarea(75, 25, 50)
+    obstacle = plt.Rectangle((xplt, yplt), wplt, hplt, color='red')  # 障碍物位置和大小
+    ax.add_patch(obstacle)
+
+    xplt, yplt, wplt, hplt = brarea2pltarea(80, 30, 20)
+    obstacle = plt.Rectangle((xplt, yplt), wplt, hplt, color='red')  # 障碍物位置和大小
+    ax.add_patch(obstacle)
+
+    xplt, yplt, wplt, hplt = brarea2pltarea(120, 20, 10)
+    obstacle = plt.Rectangle((xplt, yplt), wplt, hplt, color='red')  # 障碍物位置和大小
+    ax.add_patch(obstacle)
+
+    xplt, yplt, wplt, hplt = brarea2pltarea(128.5, 10, 5)
+    obstacle = plt.Rectangle((xplt, yplt), wplt, hplt, color='red')  # 障碍物位置和大小
+    ax.add_patch(obstacle)
+
+    xplt, yplt, wplt, hplt = brarea2pltarea(80, 5, 75)
+    obstacle = plt.Rectangle((xplt, yplt), wplt, hplt, color='red')  # 障碍物位置和大小
     ax.add_patch(obstacle)
 
     # 轨迹线，设置为虚线
