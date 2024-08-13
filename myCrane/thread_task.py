@@ -9,6 +9,8 @@ from opcuaclient import OPCUAClient
 # 全局变量，用于存储滑块的位置和线程状态
 x, y = 50, 25  # 初始位置
 running = True  # 线程运行标志
+trajectory_x = []  # 记录轨迹的 x 坐标
+trajectory_y = []  # 记录轨迹的 y 坐标
 
 def update_position():
     """动态更新滑块位置的函数"""
@@ -20,7 +22,7 @@ def update_position():
             x = value[0]
             y = value[1]
             print(f"当前值: {value}")
-            time.sleep(0.2)  # 每0.2秒读取一次
+            time.sleep(1)  # 每秒读取一次
     except Exception as e:
         print(f"发生错误: {e}")
     finally:
@@ -28,7 +30,7 @@ def update_position():
 
 def show_slider_animation():
     """显示滑块动画的函数"""
-    global x, y, running
+    global x, y, running, trajectory_x, trajectory_y
     # 创建图形和轴
     fig, ax = plt.subplots()
     ax.set_xlim(-10, 120)
@@ -39,14 +41,33 @@ def show_slider_animation():
     ax.add_patch(slider_square)
 
     # 创建障碍物
-    obstacle = plt.Rectangle((0.5, 0.5), 2, 2, color='red')  # 障碍物位置和大小
+    obstacle = plt.Rectangle((0.5, 20), 2, 2, color='red')  # 障碍物位置和大小
     ax.add_patch(obstacle)
+
+    # 轨迹线，设置为虚线
+    trajectory_line, = ax.plot([], [], color='green', linestyle='--', label='轨迹')
+    ax.legend()
 
     # 更新函数
     def update(frame):
-        global x, y
+        global x, y, trajectory_x, trajectory_y
         slider_square.set_xy((x - 0.5, y - 0.5))  # 更新滑块的位置
-        return slider_square,
+
+        # 记录轨迹
+        trajectory_x.append(x)
+        trajectory_y.append(y)
+
+        # 更新轨迹线
+        trajectory_line.set_data(trajectory_x, trajectory_y)
+        return slider_square, trajectory_line
+
+    # 清除轨迹的函数
+    def clear_trajectory(event):
+        global trajectory_x, trajectory_y
+        trajectory_x.clear()  # 清空 x 轨迹
+        trajectory_y.clear()  # 清空 y 轨迹
+        trajectory_line.set_data([], [])  # 更新轨迹线为空
+        plt.draw()  # 重新绘制图形
 
     # 创建动画
     ani = FuncAnimation(fig, update, frames=np.arange(0, 100), interval=100)
@@ -57,11 +78,12 @@ def show_slider_animation():
         running = False  # 设置标志，停止线程
         plt.close(fig)  # 关闭图形窗口
 
-    # 连接关闭事件
+    # 连接关闭事件和按键事件
     fig.canvas.mpl_connect('close_event', on_close)
+    fig.canvas.mpl_connect('key_press_event', clear_trajectory)
 
     plt.grid()
-    plt.title('2D Animation with Movable Square Slider and Obstacle')
+    plt.title('2D Animation with Movable Square Slider and Obstacle (Press D to Clear Trajectory)')
     plt.show()
 
 if __name__ == "__main__":
