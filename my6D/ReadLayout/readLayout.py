@@ -2,6 +2,24 @@ import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
 import numpy as np
 
+import re
+
+
+def extract_number(segment_string):
+    """
+    从给定的字符串中提取数字。
+
+    参数:
+    segment_string (str): 输入的字符串，例如 'Segment[11]'。
+
+    返回:
+    int: 提取出的数字，如果没有找到数字则返回 None。
+    """
+    match = re.search(r'\d+', segment_string)
+    if match:
+        return int(match.group(0))  # 返回提取的数字作为整数
+    return None  # 如果没有找到数字，返回 None
+
 
 # 定义一个结构体类来存储Segment的属性
 class Segment:
@@ -15,6 +33,7 @@ class Segment:
     def __repr__(self):
         return (f"Segment(ID={self.segment_id}, X={self.x}, Y={self.y}, "
                 f"Name={self.name}, IsMaster={self.is_master})")
+
 
 # 解析XML文件
 tree = ET.parse('CfgLayout.xml')  # 假设文件名为 example.xml
@@ -51,9 +70,6 @@ for segment in segments:
     segment_instance = Segment(segment_id, x_value, y_value, name_value, is_master_value)
     segment_list.append(segment_instance)
 
-# # 绘制Segment方块
-# plt.figure(figsize=(10, 10))
-
 # 创建图形
 fig, ax = plt.subplots()
 
@@ -61,12 +77,19 @@ fig, ax = plt.subplots()
 key_points = []
 markers = []
 
+# 定义颜色列表
+colors = ['blue', 'green', 'red', 'orange', 'purple', 'cyan']
+
 # 绘制方块
 for segment in segment_list:
     if segment.x is not None and segment.y is not None:
         x = float(segment.x) * 0.24
         y = float(segment.y) * 0.24
         size = 0.24
+
+        # 计算颜色索引
+        color_index = int(x // (6 * size)) % len(colors)  # 每6个小方块换一种颜色
+        color = colors[color_index]
 
         # 绘制小正方形并计算其四个角和中心
         for i in range(2):
@@ -88,7 +111,12 @@ for segment in segment_list:
 
                 # 绘制小正方形
                 ax.add_patch(plt.Rectangle((small_x, small_y), size / 2, size / 2, fill=True, edgecolor='black',
-                                           facecolor='blue'))
+                                           facecolor=color))
+
+                # 只在左下角的小方块中显示Segment ID
+                if i == 0 and j == 0:  # 左下角小方块
+                    ax.text(small_x + size / 4, small_y + size / 4, extract_number(segment.segment_id),
+                            ha='center', va='center', fontsize=12, color='white')
 
 # 添加坐标显示文本
 text = ax.text(0, 0, '', fontsize=12, color='black')
