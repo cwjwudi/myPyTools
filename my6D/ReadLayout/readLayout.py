@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 # 定义一个结构体类来存储Segment的属性
@@ -56,6 +57,10 @@ for segment in segments:
 # 创建图形
 fig, ax = plt.subplots()
 
+# 存储关键点和对应的标记
+key_points = []
+markers = []
+
 # 绘制方块
 for segment in segment_list:
     if segment.x is not None and segment.y is not None:
@@ -63,34 +68,72 @@ for segment in segment_list:
         y = float(segment.y) * 0.24
         size = 0.24
 
+        # 绘制小正方形并计算其四个角和中心
         for i in range(2):
             for j in range(2):
                 small_x = x + (i * size / 2)
                 small_y = y + (j * size / 2)
-                ax.add_patch(plt.Rectangle((small_x, small_y), size / 2, size / 2, fill=True, edgecolor='black', facecolor='blue'))
+
+                # 计算小正方形的四个角和中心
+                corners = [
+                    (small_x, small_y),  # 左下角
+                    (small_x + size / 2, small_y),  # 右下角
+                    (small_x, small_y + size / 2),  # 左上角
+                    (small_x + size / 2, small_y + size / 2),  # 右上角
+                    (small_x + size / 4, small_y + size / 4)  # 中心
+                ]
+
+                # 添加到关键点列表
+                key_points.extend(corners)
+
+                # 绘制小正方形
+                ax.add_patch(plt.Rectangle((small_x, small_y), size / 2, size / 2, fill=True, edgecolor='black',
+                                           facecolor='blue'))
 
 # 添加坐标显示文本
 text = ax.text(0, 0, '', fontsize=12, color='black')
 
+
 # 定义鼠标移动事件的回调函数
 def on_move(event):
     if event.inaxes:  # 确保鼠标在坐标轴内
-        x, y = event.xdata, event.ydata
-        text.set_position((x, y))
-        text.set_text(f'({x:.2f}, {y:.2f})')
+        mouse_x, mouse_y = event.xdata, event.ydata
+        closest_point = None
+        min_distance = float('inf')
+
+        # 检查鼠标与关键点的距离
+        for point in key_points:
+            distance = np.sqrt((mouse_x - point[0]) ** 2 + (mouse_y - point[1]) ** 2)
+            if distance < min_distance:
+                min_distance = distance
+                closest_point = point
+
+        # 如果距离小于一定阈值，显示坐标并标记选中点
+        if min_distance < 0.1:  # 可以调整这个阈值
+            text.set_position(closest_point)
+            text.set_text(f'({closest_point[0]:.2f}, {closest_point[1]:.2f})')
+
+            # 更新标记
+            if markers:
+                for marker in markers:
+                    marker.remove()  # 清除之前的标记
+                markers.clear()
+
+            # 添加新的标记
+            marker = ax.plot(closest_point[0], closest_point[1], 'ro', markersize=8)  # 红色圆点
+            markers.append(marker[0])  # 存储标记以便后续清除
+        else:
+            text.set_text('')  # 鼠标不在关键点附近时清空文本
+
         fig.canvas.draw_idle()  # 更新图形
+
 
 # 连接鼠标移动事件
 fig.canvas.mpl_connect('motion_notify_event', on_move)
 
 # 设置坐标轴范围
-plt.xlim(0, 4)  # 根据需要调整
-plt.ylim(0, 1)  # 根据需要调整
-plt.grid(False)
-plt.title('Segments Visualization')
-plt.xlabel('X Coordinate')
-plt.ylabel('Y Coordinate')
-plt.gca().set_aspect('equal', adjustable='box')
+ax.set_xlim(0, 4)
+ax.set_ylim(0, 1)
 
 # 显示图形
 ax.set_aspect('equal', adjustable='box')
