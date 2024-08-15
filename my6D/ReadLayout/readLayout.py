@@ -1,4 +1,6 @@
 import xml.etree.ElementTree as ET
+import matplotlib.pyplot as plt
+
 
 # 定义一个结构体类来存储Segment的属性
 class Segment:
@@ -48,8 +50,48 @@ for segment in segments:
     segment_instance = Segment(segment_id, x_value, y_value, name_value, is_master_value)
     segment_list.append(segment_instance)
 
-# 输出所有的Segment实例
+# # 绘制Segment方块
+# plt.figure(figsize=(10, 10))
 
-print(f'RowSeg={seg_row}, RowCol={seg_col}')
+# 创建图形
+fig, ax = plt.subplots()
+
+# 绘制方块
 for segment in segment_list:
-    print(segment)
+    if segment.x is not None and segment.y is not None:
+        x = float(segment.x) * 0.24
+        y = float(segment.y) * 0.24
+        size = 0.24
+
+        for i in range(2):
+            for j in range(2):
+                small_x = x + (i * size / 2)
+                small_y = y + (j * size / 2)
+                ax.add_patch(plt.Rectangle((small_x, small_y), size / 2, size / 2, fill=True, edgecolor='black', facecolor='blue'))
+
+# 添加坐标显示文本
+text = ax.text(0, 0, '', fontsize=12, color='black')
+
+# 定义鼠标移动事件的回调函数
+def on_move(event):
+    if event.inaxes:  # 确保鼠标在坐标轴内
+        x, y = event.xdata, event.ydata
+        text.set_position((x, y))
+        text.set_text(f'({x:.2f}, {y:.2f})')
+        fig.canvas.draw_idle()  # 更新图形
+
+# 连接鼠标移动事件
+fig.canvas.mpl_connect('motion_notify_event', on_move)
+
+# 设置坐标轴范围
+plt.xlim(0, 4)  # 根据需要调整
+plt.ylim(0, 1)  # 根据需要调整
+plt.grid(False)
+plt.title('Segments Visualization')
+plt.xlabel('X Coordinate')
+plt.ylabel('Y Coordinate')
+plt.gca().set_aspect('equal', adjustable='box')
+
+# 显示图形
+ax.set_aspect('equal', adjustable='box')
+plt.show()
