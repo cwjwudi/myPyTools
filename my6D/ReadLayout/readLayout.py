@@ -36,7 +36,7 @@ class Segment:
 
 
 # 解析XML文件
-tree = ET.parse('CfgLayout.xml')  # 假设文件名为 example.xml
+tree = ET.parse('CfgLayout.layout6d')  # 假设文件名为 example.xml
 root = tree.getroot()
 
 # 获取SegRow和SegCol的值
@@ -88,7 +88,9 @@ for segment in segment_list:
         size = 0.24
 
         # 计算颜色索引
-        color_index = int(x // (6 * size)) % len(colors)  # 每6个小方块换一种颜色
+        x_index = int(segment.x)
+        color_index = int(x_index // 3) % len(colors)  # 每3个大方块换一种颜色
+        # print(f'x,y:({x}, {y}), index:{color_index}')
         color = colors[color_index]
 
         # 绘制小正方形并计算其四个角和中心
@@ -160,7 +162,7 @@ def on_move(event):
 fig.canvas.mpl_connect('motion_notify_event', on_move)
 
 # 设置坐标轴范围
-ax.set_xlim(0, 4)
+ax.set_xlim(0, 6)
 ax.set_ylim(0, 1)
 
 # 显示图形
