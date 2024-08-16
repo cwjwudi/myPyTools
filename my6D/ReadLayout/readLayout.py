@@ -2,6 +2,8 @@ import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
 import numpy as np
 import re
+import tkinter as tk
+from tkinter import simpledialog
 
 
 def extract_number(segment_string):
@@ -177,12 +179,25 @@ def setup_plot(segment_list):
                 rect = square.patch
                 mouse_event = MouseEvent(mouse_x, mouse_y)
                 if contain_point(rect, mouse_event):
-                    new_color = colors[click_color_index % len(colors)]
-                    click_color_index += 1
-                    rect.set_facecolor(new_color)
-                    fig.canvas.draw_idle()
-                    break
+                    if event.button == 1:  # 左键点击
+                        new_color = colors[click_color_index % len(colors)]
+                        click_color_index += 1
+                        rect.set_facecolor(new_color)
+                        fig.canvas.draw_idle()
+                    elif event.button == 3:  # 右键点击
+                        # 弹出输入框获取新的 area_name
+                        root = tk.Tk()
+                        root.withdraw()  # 隐藏主窗口
+                        new_area_name = simpledialog.askstring("Input", "Enter new area name:", parent=root)
+                        if new_area_name is not None:
+                            square.area_name = new_area_name
+                            print(f"Updated area_name of segment {square.segment_id} to '{new_area_name}'")
+                            # 更新文本显示
+                            ax.text(square.x + square.size / 4, square.y + square.size / 4,
+                                    square.area_name, ha='center', va='center', fontsize=10, color='white')
+                        break
 
+    # 连接事件
     fig.canvas.mpl_connect('motion_notify_event', on_move)
     fig.canvas.mpl_connect('button_press_event', on_click)
 
@@ -190,8 +205,13 @@ def setup_plot(segment_list):
     ax.set_ylim(0, 1)
     ax.set_aspect('equal', adjustable='box')
 
-    plt.show()
+    # 启用缩放功能
+    plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
+    plt.title("Right-click to edit area name, Left-click to change color")
+    plt.xlabel("X-axis")
+    plt.ylabel("Y-axis")
 
+    plt.show()
 def main():
     segment_list = parse_xml('CfgLayout.layout6d')
     setup_plot(segment_list)
