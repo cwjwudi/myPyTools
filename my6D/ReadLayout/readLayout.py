@@ -6,6 +6,8 @@ import csv
 import re
 import tkinter as tk
 from tkinter import simpledialog
+import pandas as pd
+from sympy import false
 
 
 def extract_number(segment_string):
@@ -68,27 +70,24 @@ def getSmallSegments(segment_list):
             color_index = int(x_index // 3) % len(colors)
             color = colors[color_index]
 
-            for i in range(2):
-                for j in range(2):
-                    small_x = x + (i * size / 2)
-                    small_y = y + (j * size / 2)
+            corners = [
+                (x, y),
+                (x + size, y),
+                (x, y + size),
+                (x + size, y + size),
+                (x + size / 2, y + size / 2)
+            ]
 
-                    corners = [
-                        (small_x, small_y),
-                        (small_x + size / 2, small_y),
-                        (small_x, small_y + size / 2),
-                        (small_x + size / 2, small_y + size / 2),
-                        (small_x + size / 4, small_y + size / 4)
-                    ]
+            key_points.extend(corners)
 
-                    key_points.extend(corners)
+            square_patch = plt.Rectangle((x, y), size , size , fill=True,
+                                         edgecolor='white', facecolor=color)
+            square = Square(patch=square_patch, original_color=color,
+                            segment_id=extract_number(segment.segment_id),
+                            x=x, y=y)
+            squares.append(square)
 
-                    square_patch = plt.Rectangle((small_x, small_y), size / 2, size / 2, fill=True,
-                                                 edgecolor='white', facecolor=color)
-                    square = Square(patch=square_patch, original_color=color,
-                                    segment_id=extract_number(segment.segment_id),
-                                    x=small_x, y=small_y)
-                    squares.append(square)
+
     return squares, key_points
 
 
@@ -116,7 +115,7 @@ def parse_xml(file_path):
 
     return segment_list
 
-def setup_plot(segment_list, area_points):
+def setup_plot(segment_list, rectangles):
     global colors
     fig, ax = plt.subplots()
     markers = []
@@ -137,15 +136,15 @@ def setup_plot(segment_list, area_points):
     2024.10.9
     根据读取的point，绘制区域
     """
-    for area_point in area_points:
-        bottom_left = (area_point[0], area_point[1])  # 左下角坐标
-        top_right = (area_point[2], area_point[3])  # 右上角坐标
+    for rectangle in rectangles:
+        bottom_left = (rectangle['bottom_left_x'], rectangle['bottom_left_y'])  # 左下角坐标
+        top_right = (rectangle['top_right_x'], rectangle['top_right_y'])  # 右上角坐标
 
         # 绘制矩形
         rect_patch = plt.Rectangle(bottom_left,
                                     top_right[0] - bottom_left[0],
                                     top_right[1] - bottom_left[1],
-                                    fill=True, edgecolor='white', facecolor='black', linewidth=2)
+                                    fill=True, edgecolor='black', facecolor='white', linewidth=2)
         ax.add_patch(rect_patch)
 
         # 计算矩形的四个角点
@@ -241,23 +240,20 @@ def setup_plot(segment_list, area_points):
 2024.10.9
 读取CSV中的所有area点位
 """
-def read_area_points(area_string: str) -> List[List[float]]:
+def read_area_points(file_path: str, sheet_name: str):
     rectangles = []
-
-    # 从CSV文件中读取矩形数据， 0、1左下角X Y， 2、3右上角X Y
-    with open(area_string, 'r') as csvfile:
-        reader = csv.reader(csvfile)
-        next(reader)  # 跳过表头
-        for row in reader:
-            float_row = [float(value) for value in row]
-            rectangles.append(float_row)
+    # 使用 pandas 读取 Excel 文件
+    df = pd.read_excel(file_path, sheet_name=sheet_name)
+    for index, row in df.iterrows():
+        if pd.isna(row['name']) == false:
+            rectangles.append(row)
 
     return rectangles
 
 def main():
     segment_list = parse_xml('CfgLayout.layout6d')
-    area_points = read_area_points('rectangles.csv')
-    setup_plot(segment_list, area_points)
+    rectangles = read_area_points('rectangles.xlsx', 'rectangles')
+    setup_plot(segment_list, rectangles)
 
 if __name__ == "__main__":
     click_color_index = 0
