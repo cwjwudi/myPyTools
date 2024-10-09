@@ -1,6 +1,8 @@
 import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
 import numpy as np
+from typing import List, Tuple
+import csv
 import re
 import tkinter as tk
 from tkinter import simpledialog
@@ -81,10 +83,8 @@ def getSmallSegments(segment_list):
 
                     key_points.extend(corners)
 
-                    key_points.extend(corners)
-
                     square_patch = plt.Rectangle((small_x, small_y), size / 2, size / 2, fill=True,
-                                                 edgecolor='black', facecolor=color)
+                                                 edgecolor='white', facecolor=color)
                     square = Square(patch=square_patch, original_color=color,
                                     segment_id=extract_number(segment.segment_id),
                                     x=small_x, y=small_y)
@@ -116,7 +116,7 @@ def parse_xml(file_path):
 
     return segment_list
 
-def setup_plot(segment_list):
+def setup_plot(segment_list, area_points):
     global colors
     fig, ax = plt.subplots()
     markers = []
@@ -132,6 +132,30 @@ def setup_plot(segment_list):
                     squares[iter].segment_id, ha='center', va='center', fontsize=12, color='white')
 
     text = ax.text(0, 0, '', fontsize=12, color='black')
+
+    """
+    2024.10.9
+    根据读取的point，绘制区域
+    """
+    for area_point in area_points:
+        bottom_left = (area_point[0], area_point[1])  # 左下角坐标
+        top_right = (area_point[2], area_point[3])  # 右上角坐标
+
+        # 绘制矩形
+        rect_patch = plt.Rectangle(bottom_left,
+                                    top_right[0] - bottom_left[0],
+                                    top_right[1] - bottom_left[1],
+                                    fill=True, edgecolor='white', facecolor='black', linewidth=2)
+        ax.add_patch(rect_patch)
+
+        # 计算矩形的四个角点
+        bottom_right = (top_right[0], bottom_left[1])
+        top_left = (bottom_left[0], top_right[1])
+        points = [bottom_left, top_right, bottom_right, top_left]
+        # 把矩形的四个角的点加入关键点，可以被捕获
+        key_points.extend(points)
+
+
 
     def on_move(event):
         if event.inaxes:
@@ -201,8 +225,8 @@ def setup_plot(segment_list):
     fig.canvas.mpl_connect('motion_notify_event', on_move)
     fig.canvas.mpl_connect('button_press_event', on_click)
 
-    ax.set_xlim(0, 6)
-    ax.set_ylim(0, 1)
+    ax.set_xlim(-0.1, 6)
+    ax.set_ylim(-0.1, 0.6)
     ax.set_aspect('equal', adjustable='box')
 
     # 启用缩放功能
@@ -212,9 +236,28 @@ def setup_plot(segment_list):
     plt.ylabel("Y-axis")
 
     plt.show()
+
+"""
+2024.10.9
+读取CSV中的所有area点位
+"""
+def read_area_points(area_string: str) -> List[List[float]]:
+    rectangles = []
+
+    # 从CSV文件中读取矩形数据， 0、1左下角X Y， 2、3右上角X Y
+    with open(area_string, 'r') as csvfile:
+        reader = csv.reader(csvfile)
+        next(reader)  # 跳过表头
+        for row in reader:
+            float_row = [float(value) for value in row]
+            rectangles.append(float_row)
+
+    return rectangles
+
 def main():
     segment_list = parse_xml('CfgLayout.layout6d')
-    setup_plot(segment_list)
+    area_points = read_area_points('rectangles.csv')
+    setup_plot(segment_list, area_points)
 
 if __name__ == "__main__":
     click_color_index = 0

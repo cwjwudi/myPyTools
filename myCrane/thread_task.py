@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
@@ -14,14 +16,46 @@ running = True  # 线程运行标志
 trajectory_x = []  # 记录轨迹的 x 坐标
 trajectory_y = []  # 记录轨迹的 y 坐标
 
+def rotate_point(cx, cy, angle, px, py):
+    """绕中心点旋转点"""
+    s = np.sin(angle)
+    c = np.cos(angle)
+
+    # 移动点到原点
+    px -= cx
+    py -= cy
+
+    # 旋转
+    new_x = px * c - py * s
+    new_y = px * s + py * c
+
+    # 移回原点
+    return new_x + cx, new_y + cy
+
+def get_rotated_rectangle(x, y, width, height, angle):
+    """获取旋转后的矩形的四个角的坐标"""
+    angle_rad = np.radians(angle)  # 将角度转换为弧度
+    half_width = width / 2
+    half_height = height / 2
+
+    # 矩形的四个角
+    corners = [
+        (-half_width + x, -half_height + y),
+        (half_width + x, -half_height + y),
+        (half_width + x, half_height + y),
+        (-half_width + x, half_height + y),
+    ]
+
+    # 旋转每个角
+    rotated_corners = [rotate_point(x, y, angle_rad, cx, cy) for cx, cy in corners]
+    return np.array(rotated_corners)
 
 def brarea2pltarea(xbr, ybr, width):
-    xplt = xbr - width/2
+    xplt = xbr - width / 2
     yplt = 0
     wplt = width
     hplt = ybr
     return xplt, yplt, wplt, hplt
-
 
 def update_position():
     """动态更新滑块位置的函数"""
@@ -49,8 +83,9 @@ def show_slider_animation():
     ax.set_ylim(-10, 50)
 
     # 创建一个正方形作为滑块
-    slider_square = plt.Rectangle((x - 0.5, y - 0.5), 1, 1, color='blue')
-    ax.add_patch(slider_square)
+    width, height = 6, 1
+    slider_polygon = plt.Polygon(get_rotated_rectangle(x, y, width, height, 40), color='blue')
+    ax.add_patch(slider_polygon)
 
     # 创建一个正方形trolley
     trolley_square = plt.Rectangle((x_trolley - 0.5, y_trolley - 0.5), 1, 1, color='black')
@@ -70,14 +105,14 @@ def show_slider_animation():
         ax.add_patch(obstacle)
 
     # 轨迹线，设置为虚线
-    trajectory_line, = ax.plot([], [], color='green', linestyle='--', label='轨迹')
-    connection_line, = ax.plot([], [], color='orange', linestyle='-', label='连接线')  # 连接线
+    trajectory_line, = ax.plot([], [], color='green', linestyle='--', label='traj')
+    connection_line, = ax.plot([], [], color='orange', linestyle='-', label='line')  # 连接线
     ax.legend()
 
     # 更新函数
     def update(frame):
-        global x, y, trajectory_x, trajectory_y
-        slider_square.set_xy((x - 0.5, y - 0.5))  # 更新滑块的位置
+        slider_roate_angle = math.degrees(math.atan(-(x - x_trolley)/(y - y_trolley)))
+        slider_polygon.set_xy(get_rotated_rectangle(x, y, 6, 1, slider_roate_angle))  # 更新滑块的位置
         trolley_square.set_xy((x_trolley - 0.5, y_trolley - 0.5))  # 更新 trolley 的位置
 
         # 记录轨迹
@@ -90,7 +125,7 @@ def show_slider_animation():
         # 更新连接线
         connection_line.set_data([x, x_trolley], [y, y_trolley])  # 连接滑块和 trolley
 
-        return slider_square, trolley_square, trajectory_line, connection_line
+        return slider_polygon, trolley_square, trajectory_line, connection_line
 
     # 清除轨迹的函数
     def clear_trajectory(event):
@@ -115,6 +150,9 @@ def show_slider_animation():
     fig.canvas.mpl_connect('key_press_event', clear_trajectory)
 
     plt.grid()
+    plt.rcParams['font.sans-serif'] = ['Arial']  # 或者使用其他系统默认字体
+    plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+
     plt.title('2D Animation with Movable Square Slider and Obstacle (Press D to Clear Trajectory)')
     plt.show()
 
