@@ -8,6 +8,8 @@ import tkinter as tk
 from tkinter import simpledialog
 import pandas as pd
 from sympy import false
+from datetime import datetime
+
 
 
 def extract_number(segment_string):
@@ -146,7 +148,8 @@ def setup_plot(segment_list, rectangles):
                                     top_right[1] - bottom_left[1],
                                     fill=True, edgecolor='black', facecolor='white', linewidth=2)
         ax.add_patch(rect_patch)
-
+        ax.text(bottom_left[0] + size / 4, bottom_left[1] + size / 4,
+                rectangle['nick_name'], ha='center', va='center', fontsize=6, color='black')
         # 计算矩形的四个角点
         bottom_right = (top_right[0], bottom_left[1])
         top_left = (bottom_left[0], top_right[1])
@@ -238,21 +241,79 @@ def setup_plot(segment_list, rectangles):
 
 """
 2024.10.9
-读取CSV中的所有area点位
+读取xls中的所有area点位
 """
-def read_area_points(file_path: str, sheet_name: str):
+def read_rectangles(file_path: str, sheet_name: str):
     rectangles = []
     # 使用 pandas 读取 Excel 文件
     df = pd.read_excel(file_path, sheet_name=sheet_name)
     for index, row in df.iterrows():
-        if pd.isna(row['name']) == false:
+        if pd.isna(row['name']) == false:  # 空行不读取
             rectangles.append(row)
 
     return rectangles
 
+
+def generate_area_ID(base_name, number):
+    number_str = str(int(number))
+    zero_str = ''
+    if int(number/10) == 0:
+        zero_str = '00'
+    elif int(number/100) == 0:
+        zero_str = '0'
+    # 组合字符串
+    area_name = f"{base_name}{zero_str}{number_str}"
+    return area_name
+
+"""
+2024.10.9
+生成区域定义程序，并保存成文件
+"""
+def generate_navigation_definition(rectangles):
+    # 打开一个文本文件以写入
+    with open('actCfgArea.st', 'w', encoding="GB2312") as f:
+        # 生成当前日期
+        current_date = datetime.now().strftime("%Y年%m月%d日")
+
+        # 文件内容
+        head_content = f"""(* 
+          文件名: actCfgArea.st
+          描述: 自动生成的点位定义程序
+          日期: {current_date}
+
+          说明:
+          - 该程序为自动生成，正确性需要自行判断
+          - 请查看输出图形区域定义是否符合要求
+        *) \nACTION actCfgArea: \n\n"""
+
+        f.write(head_content)  # 写入程序头
+
+        for rectangle in rectangles:
+            area_index = int(rectangle['index'])
+            AreaID = generate_area_ID(rectangle['name'] , rectangle['index'])
+            Vaild = True
+            StationID = int(rectangle['station_id'])
+            BottomLeft_X = rectangle['bottom_left_x']
+            BottomLeft_Y = rectangle['bottom_left_y']
+            TopRight_X = rectangle['top_right_x']
+            TopRight_Y = rectangle['top_right_y']
+
+            f.write(f"gArea[{area_index}].Cfg.AreaID := '{AreaID}';\n")
+            f.write(f"gArea[{area_index}].Cfg.Vaild := {Vaild};\n")
+            f.write(f"gArea[{area_index}].Cfg.StationID := {StationID};\n")
+            f.write(f"gArea[{area_index}].Cfg.BottomLeft.X := {BottomLeft_X:.3f};\n")
+            f.write(f"gArea[{area_index}].Cfg.BottomLeft.Y := {BottomLeft_Y:.3f};\n")
+            f.write(f"gArea[{area_index}].Cfg.TopRight.X := {TopRight_X:.3f};\n")
+            f.write(f"gArea[{area_index}].Cfg.TopRight.Y := {TopRight_Y:.3f};\n\n")
+
+        f.write("END_ACTION")
+
+    print("数据已成功保存到 actCfgArea.st")
+
 def main():
     segment_list = parse_xml('CfgLayout.layout6d')
-    rectangles = read_area_points('rectangles.xlsx', 'rectangles')
+    rectangles = read_rectangles('rectangles.xlsx', 'rectangles')
+    generate_navigation_definition(rectangles)
     setup_plot(segment_list, rectangles)
 
 if __name__ == "__main__":
