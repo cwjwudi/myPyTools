@@ -148,6 +148,9 @@ def setup_plot(segment_list, rectangles):
                                     top_right[1] - bottom_left[1],
                                     fill=True, edgecolor='black', facecolor='white', linewidth=2)
         ax.add_patch(rect_patch)
+        # ax.text(bottom_left[0] + size / 4, bottom_left[1] + size / 4,
+        #         rectangle['nick_name'] + str(int(rectangle['index'])), ha='center', va='center', fontsize=6, color='black')
+
         ax.text(bottom_left[0] + size / 4, bottom_left[1] + size / 4,
                 rectangle['nick_name'], ha='center', va='center', fontsize=6, color='black')
         # 计算矩形的四个角点
@@ -227,7 +230,7 @@ def setup_plot(segment_list, rectangles):
     fig.canvas.mpl_connect('motion_notify_event', on_move)
     fig.canvas.mpl_connect('button_press_event', on_click)
 
-    ax.set_xlim(-0.1, 6)
+    ax.set_xlim(-0.1, 7)
     ax.set_ylim(-0.1, 0.6)
     ax.set_aspect('equal', adjustable='box')
 
@@ -312,7 +315,7 @@ def generate_navigation_definition(rectangles):
 
 def main():
     segment_list = parse_xml('CfgLayout.layout6d')
-    rectangles = read_rectangles('rectangles.xlsx', 'rectangles')
+    rectangles = read_rectangles('rectangles_old.xlsx', 'rectangles')
     generate_navigation_definition(rectangles)
     setup_plot(segment_list, rectangles)
 
