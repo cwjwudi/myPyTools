@@ -1,16 +1,16 @@
 import xml.etree.ElementTree as ET
+
 import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
-from typing import List, Tuple
-import csv
 import re
 import tkinter as tk
 from tkinter import simpledialog
 import pandas as pd
 from sympy import false
-from datetime import datetime
+from generateFile import generate_navigation_definition, generate_move_assembles_definition
 
-
+matplotlib.use('TkAgg')
 
 def extract_number(segment_string):
     match = re.search(r'\d+', segment_string)
@@ -257,66 +257,11 @@ def read_rectangles(file_path: str, sheet_name: str):
     return rectangles
 
 
-def generate_area_ID(base_name, number):
-    number_str = str(int(number))
-    zero_str = ''
-    if int(number/10) == 0:
-        zero_str = '00'
-    elif int(number/100) == 0:
-        zero_str = '0'
-    # 组合字符串
-    area_name = f"{base_name}{zero_str}{number_str}"
-    return area_name
-
-"""
-2024.10.9
-生成区域定义程序，并保存成文件
-"""
-def generate_navigation_definition(rectangles):
-    # 打开一个文本文件以写入
-    with open('actCfgArea.st', 'w', encoding="GB2312") as f:
-        # 生成当前日期
-        current_date = datetime.now().strftime("%Y年%m月%d日")
-
-        # 文件内容
-        head_content = f"""(* 
-          文件名: actCfgArea.st
-          描述: 自动生成的点位定义程序
-          日期: {current_date}
-
-          说明:
-          - 该程序为自动生成，正确性需要自行判断
-          - 请查看输出图形区域定义是否符合要求
-        *) \nACTION actCfgArea: \n\n"""
-
-        f.write(head_content)  # 写入程序头
-
-        for rectangle in rectangles:
-            area_index = int(rectangle['index'])
-            AreaID = generate_area_ID(rectangle['name'] , rectangle['index'])
-            Vaild = True
-            StationID = int(rectangle['station_id'])
-            BottomLeft_X = rectangle['bottom_left_x']
-            BottomLeft_Y = rectangle['bottom_left_y']
-            TopRight_X = rectangle['top_right_x']
-            TopRight_Y = rectangle['top_right_y']
-
-            f.write(f"gArea[{area_index}].Cfg.AreaID := '{AreaID}';\n")
-            f.write(f"gArea[{area_index}].Cfg.Vaild := {Vaild};\n")
-            f.write(f"gArea[{area_index}].Cfg.StationID := {StationID};\n")
-            f.write(f"gArea[{area_index}].Cfg.BottomLeft.X := {BottomLeft_X:.3f};\n")
-            f.write(f"gArea[{area_index}].Cfg.BottomLeft.Y := {BottomLeft_Y:.3f};\n")
-            f.write(f"gArea[{area_index}].Cfg.TopRight.X := {TopRight_X:.3f};\n")
-            f.write(f"gArea[{area_index}].Cfg.TopRight.Y := {TopRight_Y:.3f};\n\n")
-
-        f.write("END_ACTION")
-
-    print("数据已成功保存到 actCfgArea.st")
-
 def main():
     segment_list = parse_xml('CfgLayout.layout6d')
-    rectangles = read_rectangles('rectangles_old.xlsx', 'rectangles')
+    rectangles = read_rectangles('rectangles.xlsx', 'rectangles')
     generate_navigation_definition(rectangles)
+    generate_move_assembles_definition(rectangles)
     setup_plot(segment_list, rectangles)
 
 if __name__ == "__main__":
