@@ -7,6 +7,7 @@ import re
 import tkinter as tk
 from tkinter import simpledialog
 import pandas as pd
+from fontTools.ttLib.tables.S__i_l_f import assemble
 from sympy import false
 from generateFile import generate_navigation_definition, generate_move_assembles_definition
 
@@ -134,6 +135,8 @@ def setup_plot(segment_list, rectangles):
 
     text = ax.text(0, 0, '', fontsize=12, color='black')
 
+    max_plt_x = 0.0
+    max_plt_y = 0.0
     """
     2024.10.9
     根据读取的point，绘制区域
@@ -151,15 +154,37 @@ def setup_plot(segment_list, rectangles):
         # ax.text(bottom_left[0] + size / 4, bottom_left[1] + size / 4,
         #         rectangle['nick_name'] + str(int(rectangle['index'])), ha='center', va='center', fontsize=6, color='black')
 
+        """
+        2024.10.14
+        画 assemble point
+        """
+        assemble_point = (rectangle['move_assemble_x'], rectangle['move_assemble_y'])
+        assemble_point_patch = plt.Circle(assemble_point, radius=0.005, color='red')
+        ax.add_patch(assemble_point_patch)
+
         ax.text(bottom_left[0] + size / 4, bottom_left[1] + size / 4,
                 rectangle['nick_name'], ha='center', va='center', fontsize=6, color='black')
         # 计算矩形的四个角点
         bottom_right = (top_right[0], bottom_left[1])
         top_left = (bottom_left[0], top_right[1])
-        points = [bottom_left, top_right, bottom_right, top_left]
+
+        """
+        2024.10.14
+        添加assemble_point作为关键点
+        """
+        points = [bottom_left, top_right, bottom_right, top_left, assemble_point]
         # 把矩形的四个角的点加入关键点，可以被捕获
         key_points.extend(points)
 
+        """
+        2024.10.14
+        捕获最大的max_x和max_y用于后面的设置画幅大小
+        """
+        if top_right[0] > max_plt_x:
+            max_plt_x = top_right[0]
+
+        if top_right[1] > max_plt_y:
+            max_plt_y = top_right[1]
 
 
     def on_move(event):
@@ -176,7 +201,7 @@ def setup_plot(segment_list, rectangles):
 
             if min_distance < 0.1:
                 text.set_position(closest_point)
-                text.set_text(f'({closest_point[0]:.2f}, {closest_point[1]:.2f})')
+                text.set_text(f'({closest_point[0]:.3f}, {closest_point[1]:.3f})')
 
                 if markers:
                     for marker in markers:
@@ -230,8 +255,8 @@ def setup_plot(segment_list, rectangles):
     fig.canvas.mpl_connect('motion_notify_event', on_move)
     fig.canvas.mpl_connect('button_press_event', on_click)
 
-    ax.set_xlim(-0.1, 7)
-    ax.set_ylim(-0.1, 0.6)
+    ax.set_xlim(-0.1, int(max_plt_x) + 1)
+    ax.set_ylim(-0.1, int(max_plt_y) + 1)
     ax.set_aspect('equal', adjustable='box')
 
     # 启用缩放功能
