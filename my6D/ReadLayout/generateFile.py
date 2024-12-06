@@ -47,7 +47,7 @@ def generate_navigation_definition(rectangles):
         for rectangle in rectangles:
             area_index = int(rectangle['index'])
             AreaID = generate_area_ID(rectangle['name'] , rectangle['index'])
-            Vaild = True
+            Vaild = 'TRUE'
             StationID = int(rectangle['station_id'])
             BottomLeft_X = rectangle['bottom_left_x']
             BottomLeft_Y = rectangle['bottom_left_y']
@@ -96,7 +96,11 @@ def generate_move_assembles_definition(rectangles):
             AssembleVel = ''
             TargetPosX = rectangle['move_assemble_x']
             TargetPosY = rectangle['move_assemble_y']
-            if 'Connect' in AssembleName:
+            if 'Connect2' in AssembleName:
+                AssembleName = AssembleName[0:-1] + 'Pos2'
+                AssembleAcc = 'GO_TO_CONNECT_POS_ACC'
+                AssembleVel = 'GO_TO_CONNECT_POS_VEL'
+            elif 'Connect' in AssembleName:
                 AssembleName = AssembleName + 'Pos'
                 AssembleAcc = 'GO_TO_CONNECT_POS_ACC'
                 AssembleVel = 'GO_TO_CONNECT_POS_VEL'
@@ -106,13 +110,24 @@ def generate_move_assembles_definition(rectangles):
             elif 'Process' in AssembleName:
                 AssembleAcc = 'GO_TO_PROCESS_POS_ACC'
                 AssembleVel = 'GO_TO_PROCESS_POS_VEL'
-            elif 'Ready' in AssembleName:
+            elif 'ReadyPos' in AssembleName:
+                AssembleName = AssembleName
                 AssembleAcc = 'GO_TO_READY_POS_ACC'
                 AssembleVel = 'GO_TO_READY_POS_VEL'
+            elif 'Ready' in AssembleName:
+                AssembleName = AssembleName + 'Pos'
+                AssembleAcc = 'GO_TO_READY_POS_ACC'
+                AssembleVel = 'GO_TO_READY_POS_VEL'
+            elif 'BackPos'  in AssembleName:
+                AssembleName = AssembleName
+                AssembleAcc = 'GO_TO_BACK_POS_ACC'
+                AssembleVel = 'GO_TO_BACK_POS_VEL'
             elif 'Back'  in AssembleName:
+                AssembleName = AssembleName + 'Pos'
                 AssembleAcc = 'GO_TO_BACK_POS_ACC'
                 AssembleVel = 'GO_TO_BACK_POS_VEL'
             elif 'Test' in AssembleName:
+                AssembleName = AssembleName + 'Pos'
                 AssembleAcc = 'GO_TO_TEST_POS_ACC'
                 AssembleVel = 'GO_TO_TEST_POS_VEL'
             else:
